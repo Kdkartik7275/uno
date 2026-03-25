@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>UNO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-canvas"></div>
+
+  <!-- Main game board -->
+  <div id="game">
+
+    <!-- Header: logo + scores + turn badge -->
+    <div class="header">
+      <div class="logo">UNO</div>
+      <div class="header-right">
+        <div class="scores">
+          <div class="score-pill">YOU <span class="val" id="sp">0</span></div>
+          <div class="score-pill">CPU <span class="val" id="sc">0</span></div>
+        </div>
+        <div class="turn-badge you" id="turn-badge">YOUR TURN</div>
+      </div>
+    </div>
+
+    <!-- CPU hand -->
+    <div class="cpu-area">
+      <div class="area-label">
+        Computer
+        <span class="count-badge" id="cpu-count">7 cards</span>
+      </div>
+      <div class="cpu-hand" id="cpu-hand"></div>
+    </div>
+
+    <!-- Center table: draw pile, info panel, discard pile -->
+    <div class="center">
+      <div class="table">
+
+        <div class="pile-wrap">
+          <div class="pile-label">Draw</div>
+          <div class="draw-pile" id="draw-pile" onclick="onDraw()">
+            <div class="card back s1"><div class="back-lbl">UNO</div></div>
+            <div class="card back s2"><div class="back-lbl">UNO</div></div>
+            <div class="card back s3"><div class="back-lbl">UNO</div></div>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="dir-ring" id="dir-ring">↺</div>
+          <div class="color-row">
+            <div class="color-dot red" id="color-dot"></div>
+            <span id="color-label">RED</span>
+          </div>
+        </div>
+
+        <div class="pile-wrap">
+          <div class="pile-label">Discard</div>
+          <div class="discard-pile" id="discard-pile"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Player hand -->
+    <div class="player-area">
+      <div class="area-label">
+        You
+        <span class="count-badge" id="player-count">7 cards</span>
+      </div>
+      <div class="player-hand" id="player-hand"></div>
+    </div>
+
+    <!-- UNO button -->
+    <div class="footer">
+      <button class="uno-btn" id="uno-btn" onclick="callUno()" disabled>UNO!</button>
+    </div>
+
+  </div>
+
+  <!-- Color chooser modal -->
+  <div id="color-chooser">
+    <div class="color-modal">
+      <h2>Choose Color</h2>
+      <div class="color-btns">
+        <button class="c-btn red"    onclick="chooseColor('red')">🔴</button>
+        <button class="c-btn blue"   onclick="chooseColor('blue')">🔵</button>
+        <button class="c-btn green"  onclick="chooseColor('green')">🟢</button>
+        <button class="c-btn yellow" onclick="chooseColor('yellow')">🟡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
+  <!-- Win / lose overlay -->
+  <div id="win-overlay">
+    <div class="win-card">
+      <div class="win-emoji" id="win-emoji">🎉</div>
+      <div class="win-title" id="win-title">YOU WIN!</div>
+      <div class="win-sub"   id="win-sub">Computer ran out of cards!</div>
+      <button class="restart-btn" onclick="initGame()">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
