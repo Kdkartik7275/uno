@@ -1,48 +1,39 @@
-/* ═══════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    UNO — game.js
-   Full game logic: deck, dealing, player & CPU turns, animations, UI
-   ═══════════════════════════════════════════════════════════════════════════ */
+   Surgical DOM updates — only changed sections
+   re-rendered, no full-screen flicker.
+═══════════════════════════════════════════════ */
 
-/* ── Constants ──────────────────────────────────────────────────────────── */
-const COLORS = ['red', 'blue', 'green', 'yellow'];
+/* ─── CONSTANTS ──────────────────────────────── */
+const COLORS = ['red','blue','green','yellow'];
 const VALUES = ['0','1','2','3','4','5','6','7','8','9','skip','reverse','draw2'];
-const WILDS  = ['wild', 'wild4'];
+const WILDS  = ['wild','wild4'];
 
-/* ── Game State ─────────────────────────────────────────────────────────── */
+/* ─── STATE ──────────────────────────────────── */
 let deck        = [];
 let playerHand  = [];
 let cpuHand     = [];
 let discardPile = [];
-
 let currentColor = '';
 let currentValue = '';
 let isPlayerTurn = true;
-let direction    = 1;          // 1 = clockwise, -1 = counter-clockwise
+let direction    = 1;     // 1=cw, -1=ccw
 let pendingWild  = false;
 let calledUno    = false;
+let scorePlayer  = 0;
+let scoreCpu     = 0;
+let cpuTimer     = null;
+let toastTimer   = null;
 
-let scorePlayer = 0;
-let scoreCpu    = 0;
-
-let cpuTimer   = null;
-let toastTimer = null;
-
-/* ══════════════════════════════════════════════════════════════════════════
-   DECK MANAGEMENT
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/**
- * Build a full 108-card UNO deck.
- * Each color has: 0×1, 1–9×2, skip×2, reverse×2, draw2×2  = 25 cards × 4 colors = 100
- * Wild×4, Wild+4×4 = 8
- * Total = 108
- */
+/* ═══════════════════════════════════════════════
+   DECK
+═══════════════════════════════════════════════ */
 function buildDeck() {
   const d = [];
   COLORS.forEach(color => {
     VALUES.forEach(value => {
       d.push({ color, value });
-      if (value !== '0') d.push({ color, value }); // duplicate all except 0
+      if (value !== '0') d.push({ color, value });
     });
   });
   WILDS.forEach(value => {
@@ -51,7 +42,6 @@ function buildDeck() {
   return d;
 }
 
-/** Fisher-Yates shuffle — mutates and returns the array */
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -60,28 +50,24 @@ function shuffle(arr) {
   return arr;
 }
 
-/** Deal one card from top of deck; reshuffles discard if deck is empty */
 function deal() {
   if (!deck.length) reshuffleDiscard();
   return deck.pop();
 }
 
-/** Reshuffle the discard pile back into the draw pile (keep top card) */
 function reshuffleDiscard() {
-  const topCard = discardPile.pop();
+  const top = discardPile.pop();
   deck = shuffle([...discardPile]);
-  discardPile = [topCard];
-  toast('Deck reshuffled! 🔀', 1400);
+  discardPile = [top];
+  showToast('Deck reshuffled 🔀');
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   GAME INIT
-   ══════════════════════════════════════════════════════════════════════════ */
-
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
 function initGame() {
   clearTimeout(cpuTimer);
 
-  // Reset state
   deck        = shuffle(buildDeck());
   playerHand  = [];
   cpuHand     = [];
@@ -91,194 +77,175 @@ function initGame() {
   pendingWild  = false;
   calledUno    = false;
 
-  // Deal 7 cards to each player
   for (let i = 0; i < 7; i++) {
     playerHand.push(deal());
     cpuHand.push(deal());
   }
 
-  // Pick a non-wild starter card for the discard pile
+  // Non-wild starter
   let starter;
   do { starter = deal(); } while (starter.color === 'wild');
   discardPile.push(starter);
   currentColor = starter.color;
   currentValue = starter.value;
 
-  // Reset UI
   document.getElementById('win-overlay').classList.remove('show');
-  document.getElementById('sp').textContent = scorePlayer;
-  document.getElementById('sc').textContent = scoreCpu;
+  document.getElementById('conf-wrap').innerHTML = '';
+  document.getElementById('thinking').classList.remove('active');
 
-  render();
+  renderCPUHand();
+  renderPlayerHand();
+  renderDiscard();
+  updateHUD();
+  updateColorDot();
+  updateDir();
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CARD LABEL HELPERS
-   ══════════════════════════════════════════════════════════════════════════ */
-
+/* ═══════════════════════════════════════════════
+   LABEL HELPERS
+═══════════════════════════════════════════════ */
 function cardLabel(value) {
-  switch (value) {
-    case 'skip':    return '⊘';
-    case 'reverse': return '↺';
-    case 'draw2':   return '+2';
-    case 'wild':    return '★';
-    case 'wild4':   return '+4';
-    default:        return value;
-  }
+  const map = { skip: '⊘', reverse: '↺', draw2: '+2', wild: '★', wild4: '+4' };
+  return map[value] ?? value;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    DOM CARD BUILDERS
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/**
- * Create a card <div> element.
- * @param {Object}  card       - { color, value }
- * @param {boolean} forPlayer  - add player interaction classes
- * @param {number}  idx        - index in playerHand (for click handler)
- */
+═══════════════════════════════════════════════ */
 function makeCard(card, forPlayer = false, idx = -1) {
   const el  = document.createElement('div');
   const lbl = cardLabel(card.value);
+  const cls = card.color === 'wild' ? 'wild' : card.color;
 
-  el.className = `card ${card.color === 'wild' ? 'wild' : card.color}`;
-  el.innerHTML = `<span class="tl">${lbl}</span>${lbl}<span class="br">${lbl}</span>`;
+  el.className = `card ${cls}`;
+  el.innerHTML = `
+    <div class="card-oval"></div>
+    <span class="cc-tl">${lbl}</span>
+    <span class="cc-mid">${lbl}</span>
+    <span class="cc-br">${lbl}</span>
+  `;
 
   if (forPlayer) {
     el.classList.add('p-card');
     el.style.animationDelay = `${idx * 0.04}s`;
 
     if (canPlay(card) && isPlayerTurn) {
-      el.classList.add('playable');
+      el.classList.add('can-play');
       el.addEventListener('click', () => onPlayCard(idx, el));
     } else {
-      el.classList.add('blocked');
+      el.classList.add('no-play');
     }
   }
-
   return el;
 }
 
-/** Create a face-down card for the CPU hand */
 function makeBackCard(index) {
   const el = document.createElement('div');
-  el.className = 'card back cpu-card';
-
-  // Deterministic but visually varied rotation per slot
-  const rotation = ((index * 7 + 3) % 10 - 5).toFixed(1);
-  el.style.setProperty('--r', `${rotation}deg`);
-  el.style.transform    = `rotate(${rotation}deg)`;
-  el.style.animationDelay = `${index * 0.04}s`;
-  el.innerHTML = '<div class="back-lbl">UNO</div>';
-
+  el.className = 'card back cpu-c';
+  const r = ((index * 7 + 3) % 10 - 5).toFixed(1);
+  el.style.setProperty('--r', `${r}deg`);
+  el.style.transform     = `rotate(${r}deg)`;
+  el.style.animationDelay = `${index * 0.035}s`;
+  el.innerHTML = `<div class="card-oval"></div><span class="back-txt">UNO</span>`;
   return el;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   RENDER FUNCTIONS
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/** Full re-render of the UI */
-function render() {
-  renderCPUHand();
-  renderPlayerHand();
-  renderDiscardPile();
-  renderCounts();
-  renderTurnBadge();
-  renderColorIndicator();
-  renderDirectionRing();
-  renderUnoButton();
-}
-
+/* ═══════════════════════════════════════════════
+   SURGICAL RENDERS
+═══════════════════════════════════════════════ */
 function renderPlayerHand() {
-  const container = document.getElementById('player-hand');
-  container.innerHTML = '';
-  playerHand.forEach((card, i) => container.appendChild(makeCard(card, true, i)));
+  const c = document.getElementById('player-hand');
+  c.innerHTML = '';
+  playerHand.forEach((card, i) => c.appendChild(makeCard(card, true, i)));
 }
 
 function renderCPUHand() {
-  const container = document.getElementById('cpu-hand');
-  container.innerHTML = '';
-  cpuHand.forEach((_, i) => container.appendChild(makeBackCard(i)));
+  const c = document.getElementById('cpu-hand');
+  c.innerHTML = '';
+  cpuHand.forEach((_, i) => c.appendChild(makeBackCard(i)));
 }
 
-function renderDiscardPile() {
-  const container = document.getElementById('discard-pile');
-  container.innerHTML = '';
+function renderDiscard() {
+  const c = document.getElementById('discard-pile');
+  c.innerHTML = '';
 
-  // Show second-to-top card slightly behind for depth
   if (discardPile.length >= 2) {
-    const prevCard = discardPile[discardPile.length - 2];
-    const el = makeCard(prevCard);
-    el.classList.add('prev-card');
+    const prev = discardPile[discardPile.length - 2];
+    const el   = makeCard(prev);
+    el.classList.add('prev-top');
     const rot = ((discardPile.length * 17 + 3) % 14 - 7).toFixed(1);
     el.style.transform = `rotate(${rot}deg)`;
-    container.appendChild(el);
+    c.appendChild(el);
   }
 
-  // Top card with land animation
-  const topCard = discardPile[discardPile.length - 1];
-  const el = makeCard(topCard);
-  el.classList.add('top-card');
+  const top = discardPile[discardPile.length - 1];
+  const el  = makeCard(top);
+  el.classList.add('cur-top');
   const rot2 = ((discardPile.length * 13 + 7) % 12 - 6).toFixed(1);
-  el.style.setProperty('--rot', `rotate(${rot2}deg)`);
-  container.appendChild(el);
+  el.style.setProperty('--drot', `rotate(${rot2}deg)`);
+  c.appendChild(el);
+
+  // Update active-color border ring on discard
+  const colorMap = { red:'#e8192c', blue:'#0057b7', green:'#00a550', yellow:'#ffda00', wild:'rgba(255,255,255,0.5)' };
+  c.style.setProperty('--active-border', colorMap[currentColor] || 'transparent');
 }
 
-function renderCounts() {
+function updateHUD() {
   const pc = playerHand.length;
   const cc = cpuHand.length;
 
-  const playerBadge = document.getElementById('player-count');
-  const cpuBadge    = document.getElementById('cpu-count');
+  // Turn indicator
+  const ti = document.getElementById('turn-indicator');
+  if (isPlayerTurn) {
+    ti.textContent = 'YOUR TURN';
+    ti.className   = 'turn-you';
+  } else {
+    ti.textContent = 'CPU TURN';
+    ti.className   = 'turn-cpu';
+  }
 
-  playerBadge.textContent = `${pc} card${pc !== 1 ? 's' : ''}`;
-  cpuBadge.textContent    = `${cc} card${cc !== 1 ? 's' : ''}`;
+  // Card counts
+  document.getElementById('player-count').textContent = pc;
+  document.getElementById('cpu-count').textContent    = cc;
 
-  pc === 1 ? playerBadge.classList.add('uno-alert')    : playerBadge.classList.remove('uno-alert');
-  cc === 1 ? cpuBadge.classList.add('uno-alert')       : cpuBadge.classList.remove('uno-alert');
-}
+  const pcEl = document.getElementById('player-count');
+  const ccEl = document.getElementById('cpu-count');
+  pc === 1 ? pcEl.classList.add('uno-hot')    : pcEl.classList.remove('uno-hot');
+  cc === 1 ? ccEl.classList.add('uno-hot')    : ccEl.classList.remove('uno-hot');
 
-function renderTurnBadge() {
-  const badge = document.getElementById('turn-badge');
-  badge.textContent = isPlayerTurn ? 'YOUR TURN' : 'CPU TURN';
-  badge.className   = `turn-badge ${isPlayerTurn ? 'you' : 'cpu'}`;
-}
+  // Scores
+  document.getElementById('score-p').textContent = scorePlayer;
+  document.getElementById('score-c').textContent = scoreCpu;
 
-function renderColorIndicator() {
-  document.getElementById('color-dot').className   = `color-dot ${currentColor}`;
-  document.getElementById('color-label').textContent = currentColor.toUpperCase();
-}
-
-function renderDirectionRing() {
-  document.getElementById('dir-ring').textContent = direction === 1 ? '↺' : '↻';
-}
-
-function renderUnoButton() {
+  // UNO button
   document.getElementById('uno-btn').disabled = !(playerHand.length === 2 && isPlayerTurn);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   GAME RULES
-   ══════════════════════════════════════════════════════════════════════════ */
+function updateColorDot() {
+  document.getElementById('active-color-dot').className  = `color-dot ${currentColor}`;
+  document.getElementById('active-color-name').textContent = currentColor.toUpperCase();
+}
 
-/** Check if a card can legally be played on the current discard */
+function updateDir() {
+  document.getElementById('dir-indicator').textContent = direction === 1 ? '↺' : '↻';
+}
+
+/* ═══════════════════════════════════════════════
+   RULES
+═══════════════════════════════════════════════ */
 function canPlay(card) {
   if (card.color === 'wild') return true;
   return card.color === currentColor || card.value === currentValue;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    PLAYER ACTIONS
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/** Called when the player clicks a card in their hand */
+═══════════════════════════════════════════════ */
 function onPlayCard(idx, el) {
   if (!isPlayerTurn) return;
   const card = playerHand[idx];
   if (!canPlay(card)) return;
 
-  // Trigger fly-off animation, then process card
   el.classList.add('playing');
 
   setTimeout(() => {
@@ -287,179 +254,150 @@ function onPlayCard(idx, el) {
     currentValue = card.value;
     calledUno    = false;
 
-    // Check instant win
+    renderDiscard();
+    updateHUD();
+
     if (!playerHand.length) {
-      render();
+      renderPlayerHand();
       endRound('player');
       return;
     }
 
-    // Wild card — show color chooser
     if (card.color === 'wild') {
       pendingWild = card.value;
-      render();
-      setTimeout(() => document.getElementById('color-chooser').classList.add('show'), 80);
+      renderPlayerHand();
+      setTimeout(() => document.getElementById('color-modal').classList.add('open'), 90);
       return;
     }
 
-    // Normal colored card
     currentColor = card.color;
+    updateColorDot();
     applyEffect(card.value, 'player');
-  }, 260);
+  }, 280);
 }
 
-/** Called when the player clicks the draw pile */
 function onDraw() {
   if (!isPlayerTurn) return;
-
-  // Ripple animation on draw pile
-  const drawPile = document.getElementById('draw-pile');
-  drawPile.classList.remove('ripple');
-  void drawPile.offsetWidth; // force reflow to restart animation
-  drawPile.classList.add('ripple');
-  setTimeout(() => drawPile.classList.remove('ripple'), 460);
-
   const card = deal();
   playerHand.push(card);
-  toast(canPlay(card) ? 'Drew a playable card! 🃏' : 'Drew a card', 1000);
-
+  showToast(canPlay(card) ? 'Drew a playable card! 🃏' : 'Drew a card');
+  renderPlayerHand();
+  updateHUD();
   isPlayerTurn = false;
-  render();
-  setTimeout(scheduleCPU, 500);
+  updateHUD();
+  document.getElementById('thinking').classList.add('active');
+  setTimeout(scheduleCPU, 550);
 }
 
-/** Called when the player clicks the UNO button */
 function callUno() {
   if (playerHand.length !== 2 || !isPlayerTurn) return;
   calledUno = true;
   document.getElementById('uno-btn').disabled = true;
-  toast('UNO! 🔥', 1200);
+  showToast('UNO! 🔥', 2000);
 }
 
-/** Called when the player picks a color after playing a Wild */
 function chooseColor(color) {
-  document.getElementById('color-chooser').classList.remove('show');
+  document.getElementById('color-modal').classList.remove('open');
   currentColor = color;
-  renderColorIndicator();
+  updateColorDot();
+  renderDiscard();  // update border ring
 
-  const wasWild4 = (pendingWild === 'wild4');
-  pendingWild    = false;
+  const was4 = (pendingWild === 'wild4');
+  pendingWild = false;
 
-  if (wasWild4) {
-    // CPU draws 4 and loses their next turn
+  if (was4) {
     for (let i = 0; i < 4; i++) cpuHand.push(deal());
-    toast('CPU draws 4! 😈', 1800);
-    isPlayerTurn = false;
-    render();
-    scheduleCPU();
-  } else {
-    isPlayerTurn = false;
-    render();
-    scheduleCPU();
+    showToast('CPU draws 4! 😈');
+    renderCPUHand();
+    updateHUD();
   }
+
+  isPlayerTurn = false;
+  updateHUD();
+  document.getElementById('thinking').classList.add('active');
+  scheduleCPU();
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CARD EFFECTS
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/**
- * Apply the effect of an action card.
- * @param {string} value - 'skip' | 'reverse' | 'draw2' | anything else (ignored)
- * @param {string} who   - 'player' | 'cpu'  (who played the card)
- */
+/* ═══════════════════════════════════════════════
+   EFFECTS
+═══════════════════════════════════════════════ */
 function applyEffect(value, who) {
-  switch (value) {
+  const hideThinker = () => document.getElementById('thinking').classList.remove('active');
+  const showThinker = () => document.getElementById('thinking').classList.add('active');
 
+  switch (value) {
     case 'skip':
-      // In 2-player UNO, Skip means the player who played it goes again
-      toast(who === 'player' ? 'CPU skipped! ⊘' : 'You were skipped! ⊘', 1400);
+      showToast(who === 'player' ? 'CPU skipped! ⊘' : 'Skipped! ⊘');
       if (who === 'player') {
-        isPlayerTurn = true;
-        render();
-        toast('Go again! 🔄', 900);
+        isPlayerTurn = true; hideThinker(); renderPlayerHand(); updateHUD();
       } else {
-        isPlayerTurn = false;
-        render();
-        scheduleCPU();
+        isPlayerTurn = false; showThinker(); updateHUD(); scheduleCPU();
       }
       break;
 
     case 'reverse':
-      // In 2-player UNO, Reverse acts like Skip
-      direction *= -1;
-      toast('Direction reversed!', 1100);
+      direction *= -1; updateDir();
+      showToast('Reversed! ↺');
       if (who === 'player') {
-        isPlayerTurn = true;
-        render();
+        isPlayerTurn = true; hideThinker(); renderPlayerHand(); updateHUD();
       } else {
-        isPlayerTurn = false;
-        render();
-        scheduleCPU();
+        isPlayerTurn = false; showThinker(); updateHUD(); scheduleCPU();
       }
       break;
 
     case 'draw2':
       if (who === 'player') {
         for (let i = 0; i < 2; i++) cpuHand.push(deal());
-        toast('CPU draws 2! 🃏', 1400);
-        isPlayerTurn = true;
-        render();
+        showToast('CPU draws 2! 🃏');
+        renderCPUHand(); updateHUD();
+        isPlayerTurn = true; hideThinker(); renderPlayerHand(); updateHUD();
       } else {
         for (let i = 0; i < 2; i++) playerHand.push(deal());
-        toast('You draw 2! 😖', 1400);
-        isPlayerTurn = true;
-        render();
+        showToast('You draw 2! 😖');
+        renderPlayerHand(); updateHUD();
+        isPlayerTurn = true; hideThinker(); updateHUD();
       }
       break;
 
     default:
-      // Plain number card — hand off to the other player
       if (who === 'player') {
-        isPlayerTurn = false;
-        render();
-        scheduleCPU();
+        isPlayerTurn = false; showThinker(); updateHUD(); scheduleCPU();
       } else {
-        isPlayerTurn = true;
-        render();
+        isPlayerTurn = true; hideThinker(); renderPlayerHand(); updateHUD();
       }
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CPU LOGIC
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/** Schedule the CPU's turn after a short human-like delay */
+/* ═══════════════════════════════════════════════
+   CPU AI
+═══════════════════════════════════════════════ */
 function scheduleCPU() {
   clearTimeout(cpuTimer);
-  cpuTimer = setTimeout(cpuTurn, 900 + Math.random() * 550);
+  cpuTimer = setTimeout(cpuTurn, 900 + Math.random() * 600);
 }
 
-/** CPU decides what to do on their turn */
 function cpuTurn() {
   if (isPlayerTurn) return;
 
   const playable = cpuHand.filter(canPlay);
 
-  // CPU must draw if no playable cards
   if (!playable.length) {
     const drawn = deal();
     cpuHand.push(drawn);
-    toast('CPU draws a card 🤖', 900);
-    render();
+    showToast('CPU draws a card 🤖');
+    renderCPUHand(); updateHUD();
 
     if (canPlay(drawn)) {
-      // Play the drawn card after a brief pause
-      cpuTimer = setTimeout(() => cpuPlayCard(drawn), 750);
+      cpuTimer = setTimeout(() => cpuPlayCard(drawn), 720);
     } else {
       isPlayerTurn = true;
-      render();
+      document.getElementById('thinking').classList.remove('active');
+      renderPlayerHand(); updateHUD();
     }
     return;
   }
 
-  // Priority scoring: wild4 > draw2 > skip > reverse > wild > same-color > other
+  // Priority: wild4 > draw2 > skip > reverse > wild > same-color > other
   const priority = card => {
     if (card.value === 'wild4')   return 6;
     if (card.value === 'draw2')   return 5;
@@ -474,7 +412,6 @@ function cpuTurn() {
   cpuPlayCard(playable[0]);
 }
 
-/** CPU plays a specific card */
 function cpuPlayCard(card) {
   const idx = cpuHand.indexOf(card);
   if (idx === -1) return;
@@ -483,49 +420,41 @@ function cpuPlayCard(card) {
   discardPile.push(card);
   currentValue = card.value;
 
-  // Check if CPU won
-  if (!cpuHand.length) {
-    render();
-    endRound('cpu');
-    return;
-  }
+  document.getElementById('thinking').classList.remove('active');
+  renderCPUHand(); renderDiscard(); updateHUD();
 
-  // CPU calls UNO at 1 card
-  if (cpuHand.length === 1) toast('CPU says UNO! 🤖', 1200);
+  if (!cpuHand.length) { endRound('cpu'); return; }
+  if (cpuHand.length === 1) showToast('CPU says UNO! 🤖');
 
-  // Handle wild cards
   if (card.color === 'wild') {
-    // CPU picks whichever color it has the most of
-    const colorCount = { red: 0, blue: 0, green: 0, yellow: 0 };
-    cpuHand.forEach(c => {
-      if (colorCount[c.color] !== undefined) colorCount[c.color]++;
-    });
-    currentColor = Object.entries(colorCount)
-      .sort((a, b) => b[1] - a[1])[0][0];
-    renderColorIndicator();
+    // CPU picks most common color in its hand
+    const cnt = { red:0, blue:0, green:0, yellow:0 };
+    cpuHand.forEach(c => { if (cnt[c.color] !== undefined) cnt[c.color]++; });
+    currentColor = Object.entries(cnt).sort((a,b) => b[1]-a[1])[0][0];
+    updateColorDot();
+    renderDiscard();
 
     if (card.value === 'wild4') {
       for (let i = 0; i < 4; i++) playerHand.push(deal());
-      toast('CPU plays +4! You draw 4! 😱', 2000);
-      isPlayerTurn = true;
-      render();
+      showToast('CPU plays +4! You draw 4! 😱');
+      renderPlayerHand(); updateHUD();
+      isPlayerTurn = true; updateHUD();
       return;
     }
 
-    isPlayerTurn = true;
-    render();
+    isPlayerTurn = true; renderPlayerHand(); updateHUD();
     return;
   }
 
-  // Colored card — set color and apply effect
   currentColor = card.color;
+  updateColorDot();
+  renderDiscard();
   applyEffect(card.value, 'cpu');
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   END OF ROUND
-   ══════════════════════════════════════════════════════════════════════════ */
-
+/* ═══════════════════════════════════════════════
+   END ROUND
+═══════════════════════════════════════════════ */
 function endRound(winner) {
   clearTimeout(cpuTimer);
 
@@ -533,27 +462,50 @@ function endRound(winner) {
     scorePlayer++;
     document.getElementById('win-emoji').textContent  = '🎉';
     document.getElementById('win-title').textContent  = 'YOU WIN!';
-    document.getElementById('win-title').style.color  = '#34d399';
+    document.getElementById('win-title').style.color  = '#40d880';
     document.getElementById('win-sub').textContent    = 'Computer ran out of cards!';
+    spawnConfetti();
   } else {
     scoreCpu++;
     document.getElementById('win-emoji').textContent  = '🤖';
     document.getElementById('win-title').textContent  = 'CPU WINS!';
-    document.getElementById('win-title').style.color  = '#f87171';
+    document.getElementById('win-title').style.color  = '#ff6060';
     document.getElementById('win-sub').textContent    = 'Better luck next time!';
   }
 
-  document.getElementById('sp').textContent = scorePlayer;
-  document.getElementById('sc').textContent = scoreCpu;
+  document.getElementById('wp').textContent      = scorePlayer;
+  document.getElementById('wc').textContent      = scoreCpu;
+  document.getElementById('score-p').textContent = scorePlayer;
+  document.getElementById('score-c').textContent = scoreCpu;
 
   setTimeout(() => document.getElementById('win-overlay').classList.add('show'), 500);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TOAST NOTIFICATIONS
-   ══════════════════════════════════════════════════════════════════════════ */
+function spawnConfetti() {
+  const wrap = document.getElementById('conf-wrap');
+  wrap.innerHTML = '';
+  const colors = ['#ff6060','#4da8ff','#40d880','#ffe84d','#ff9800','#e040fb'];
 
-function toast(message, duration = 1400) {
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'conf-piece';
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[i % colors.length]};
+      width:  ${5 + Math.random() * 9}px;
+      height: ${5 + Math.random() * 9}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-delay:    ${Math.random() * 1.0}s;
+      animation-duration: ${1.4 + Math.random() * 0.9}s;
+    `;
+    wrap.appendChild(el);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+function showToast(message, duration = 1600) {
   const el = document.getElementById('toast');
   el.textContent = message;
   el.classList.add('show');
@@ -561,7 +513,7 @@ function toast(message, duration = 1400) {
   toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ENTRY POINT
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════ */
 initGame();
