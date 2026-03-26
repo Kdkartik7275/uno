@@ -1,145 +1,388 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>UNO</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- ── ANIMATED SKY BACKGROUND ── -->
-    <div class="sky-bg">
-      <div class="cloud c1"></div>
-      <div class="cloud c2"></div>
-      <div class="cloud c3"></div>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>UNO!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 1 — LOADING                          ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-loading" class="screen active">
+  <div class="load-orbs">
+    <div class="orb" style="--ox:8%;--oy:18%;--oc:#ff1744;--od:0s;--os:260px"></div>
+    <div class="orb" style="--ox:80%;--oy:12%;--oc:#ffd600;--od:.5s;--os:200px"></div>
+    <div class="orb" style="--ox:65%;--oy:70%;--oc:#00c853;--od:.9s;--os:240px"></div>
+    <div class="orb" style="--ox:15%;--oy:72%;--oc:#2979ff;--od:1.3s;--os:220px"></div>
+    <div class="orb" style="--ox:45%;--oy:5%;--oc:#d500f9;--od:.6s;--os:180px"></div>
+  </div>
+  <div class="load-body">
+    <div class="load-logo-wrap">
+      <div class="load-logo">UNO</div>
+      <div class="load-logo-shine">UNO</div>
+    </div>
+    <div class="load-cards">
+      <div class="ldc ldc-r">7</div>
+      <div class="ldc ldc-b">+2</div>
+      <div class="ldc ldc-g">↺</div>
+      <div class="ldc ldc-y">⊘</div>
+      <div class="ldc ldc-w">★</div>
+    </div>
+    <div class="load-progress-wrap">
+      <div class="load-track"><div id="load-fill" class="load-fill"></div></div>
+      <div id="load-pct" class="load-pct">0%</div>
+    </div>
+    <div class="load-tagline">Shuffle · Deal · Dominate</div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 2 — HOME                             ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-home" class="screen">
+  <div class="home-bg">
+    <div class="hblob hb1"></div>
+    <div class="hblob hb2"></div>
+    <div class="hblob hb3"></div>
+    <div class="hblob hb4"></div>
+    <div class="hblob hb5"></div>
+  </div>
+  <div class="home-floaters">
+    <div class="hf hf-r" style="--hfx:-130px;--hfy:-55px;--hfr:-20deg;--hfd:0s">5</div>
+    <div class="hf hf-b" style="--hfx:120px;--hfy:-75px;--hfr:16deg;--hfd:.35s">+2</div>
+    <div class="hf hf-g" style="--hfx:-100px;--hfy:85px;--hfr:13deg;--hfd:.7s">↺</div>
+    <div class="hf hf-y" style="--hfx:140px;--hfy:100px;--hfr:-12deg;--hfd:1.05s">★</div>
+    <div class="hf hf-r" style="--hfx:70px;--hfy:-130px;--hfr:24deg;--hfd:1.4s">⊘</div>
+    <div class="hf hf-b" style="--hfx:-65px;--hfy:150px;--hfr:-22deg;--hfd:1.75s">9</div>
+    <div class="hf hf-g" style="--hfx:180px;--hfy:-20px;--hfr:8deg;--hfd:.5s">3</div>
+    <div class="hf hf-y" style="--hfx:-170px;--hfy:20px;--hfr:-15deg;--hfd:1.1s">+4</div>
+  </div>
+  <div class="home-content">
+    <div class="home-logo-box">
+      <div class="home-logo">UNO</div>
+      <div class="home-logo-glow">UNO</div>
+    </div>
+    <p class="home-sub">The Classic Card Game</p>
+    <div class="home-btns">
+      <button class="hbtn hbtn-play" onclick="showModes()">
+        <span>▶</span> Play Now
+      </button>
+      <button class="hbtn hbtn-settings" onclick="showSettings('home')">
+        <span>⚙</span> Settings
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 3 — MODE SELECT                      ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-modes" class="screen">
+  <div class="overlay-bg"></div>
+  <div class="panel modes-panel">
+    <button class="panel-back" onclick="showHome()">‹ Back</button>
+    <div class="panel-title">Game Mode</div>
+    <div class="panel-sub">How do you want to play?</div>
+
+    <div class="mode-cards">
+
+      <!-- VS COMPUTER -->
+      <div class="mode-tile mc-cpu">
+        <div class="mt-header">
+          <div class="mt-icon">🤖</div>
+          <div>
+            <div class="mt-name">VS Computer</div>
+            <div class="mt-desc">Play against AI opponents</div>
+          </div>
+        </div>
+        <div class="mt-players-row">
+          <div class="mt-players-lbl">CPU Opponents</div>
+          <div class="mt-player-btns">
+            <button class="mpb active" data-mode="cpu" data-count="1" onclick="selectPlayers(this,1,'cpu')">1</button>
+            <button class="mpb"        data-mode="cpu" data-count="2" onclick="selectPlayers(this,2,'cpu')">2</button>
+            <button class="mpb"        data-mode="cpu" data-count="3" onclick="selectPlayers(this,3,'cpu')">3</button>
+          </div>
+        </div>
+        <div class="mt-diff-row">
+          <div class="mt-players-lbl">Difficulty</div>
+          <div class="mt-diff-btns">
+            <button class="mdb" data-diff="easy"   onclick="selectDiff(this,'easy')">Easy</button>
+            <button class="mdb active" data-diff="medium" onclick="selectDiff(this,'medium')">Medium</button>
+            <button class="mdb" data-diff="hard"   onclick="selectDiff(this,'hard')">Hard</button>
+          </div>
+        </div>
+        <button class="mt-play-btn" onclick="startVsCpu()">▶ Start Game</button>
+      </div>
+
+      <!-- MULTIPLAYER -->
+      <div class="mode-tile mc-multi">
+        <div class="mt-header">
+          <div class="mt-icon">👥</div>
+          <div>
+            <div class="mt-name">Multiplayer</div>
+            <div class="mt-desc">Play with friends online</div>
+          </div>
+        </div>
+        <div class="mt-players-row">
+          <div class="mt-players-lbl">Total Players</div>
+          <div class="mt-player-btns">
+            <button class="mpb active" data-mode="mp" data-count="2" onclick="selectPlayers(this,2,'mp')">2</button>
+            <button class="mpb"        data-mode="mp" data-count="3" onclick="selectPlayers(this,3,'mp')">3</button>
+            <button class="mpb"        data-mode="mp" data-count="4" onclick="selectPlayers(this,4,'mp')">4</button>
+          </div>
+        </div>
+        <button class="mt-play-btn mt-play-multi" onclick="showMultiLobby()">▶ Go to Lobby</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 4 — MULTIPLAYER LOBBY                ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-lobby" class="screen">
+  <div class="overlay-bg"></div>
+  <div class="panel lobby-panel">
+    <button class="panel-back" onclick="showScreen('screen-modes')">‹ Back</button>
+    <div class="panel-title">Multiplayer Lobby</div>
+    <div class="panel-sub" id="lobby-sub">Waiting for players…</div>
+
+    <div class="lobby-room-code">
+      <div class="lrc-label">ROOM CODE</div>
+      <div class="lrc-code" id="lobby-code">------</div>
+      <button class="lrc-copy" onclick="copyRoomCode()">📋 Copy</button>
     </div>
 
-    <!-- ── GAME TABLE ── -->
-    <div id="table">
-      <!-- TOP BAR -->
-      <header id="topbar">
-        <div id="logo">UNO</div>
+    <div class="lobby-players" id="lobby-players"></div>
+
+    <div class="lobby-status">
+      <div class="lstat-dot"></div>
+      <span id="lobby-status-txt">Connecting to server…</span>
+    </div>
+
+    <div class="lobby-bottom-btns">
+      <button class="lbtn lbtn-invite" onclick="copyRoomCode()">📨 Invite Friends</button>
+      <button class="lbtn lbtn-start" id="lobby-start-btn" onclick="startMultiGame()" disabled>
+        ▶ Start Game
+      </button>
+    </div>
+
+    <div class="lobby-coming-soon">
+      <div class="lcs-icon">🚧</div>
+      <div class="lcs-text">Multiplayer with real players coming soon!<br/>Socket.IO integration in progress.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 5 — SETTINGS                         ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-settings" class="screen">
+  <div class="overlay-bg"></div>
+  <div class="panel settings-panel">
+    <button class="panel-back" id="settings-back-btn" onclick="settingsBack()">‹ Back</button>
+    <div class="panel-title">Settings</div>
+
+    <div class="settings-rows">
+
+      <div class="srow">
+        <div class="sinfo">
+          <div class="sname">🔊 Sound Effects</div>
+          <div class="sdesc">Card plays, draws, UNO shout</div>
+        </div>
+        <label class="tog">
+          <input type="checkbox" id="snd-sfx" checked onchange="saveSetting('sfx',this.checked)"/>
+          <span class="tog-slider"></span>
+        </label>
+      </div>
+
+      <div class="srow">
+        <div class="sinfo">
+          <div class="sname">📳 Vibration</div>
+          <div class="sdesc">Haptic feedback on mobile</div>
+        </div>
+        <label class="tog">
+          <input type="checkbox" id="set-vibe" checked onchange="saveSetting('vibe',this.checked)"/>
+          <span class="tog-slider"></span>
+        </label>
+      </div>
+
+      <div class="srow">
+        <div class="sinfo">
+          <div class="sname">⚡ Animations</div>
+          <div class="sdesc">Smooth card effects</div>
+        </div>
+        <label class="tog">
+          <input type="checkbox" id="set-anim" checked onchange="saveSetting('anim',this.checked)"/>
+          <span class="tog-slider"></span>
+        </label>
+      </div>
+
+      <div class="srow">
+        <div class="sinfo">
+          <div class="sname">🃏 Card Style</div>
+          <div class="sdesc">Visual theme for cards</div>
+        </div>
+        <select class="ssel" id="set-style" onchange="saveSetting('style',this.value)">
+          <option value="classic">Classic</option>
+          <option value="neon">Neon</option>
+          <option value="pastel">Pastel</option>
+        </select>
+      </div>
+
+      <div class="srow">
+        <div class="sinfo">
+          <div class="sname">🎨 Table Theme</div>
+          <div class="sdesc">Felt colour</div>
+        </div>
+        <select class="ssel" id="set-table" onchange="saveSetting('table',this.value)">
+          <option value="green">Forest Green</option>
+          <option value="blue">Ocean Blue</option>
+          <option value="purple">Space Purple</option>
+          <option value="red">Volcano Red</option>
+          <option value="dark">Midnight Dark</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 6 — GAME (Circular layout)           ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-game" class="screen">
+
+  <!-- Background world / globe -->
+  <div id="game-world"></div>
+
+  <div id="table">
+
+    <!-- TOP BAR -->
+    <header id="topbar">
+      <button id="back-btn" onclick="confirmQuit()">←</button>
+      <div id="logo">UNO</div>
+      <div id="topbar-right">
         <div id="turn-pill" class="turn-you">YOUR TURN</div>
         <div id="scores">
-          <div class="score-chip you">YOU <span id="score-p">0</span></div>
-          <div class="score-chip cpu">CPU <span id="score-c">0</span></div>
+          <div class="schip you">YOU <span id="score-p">0</span></div>
+          <div class="schip cpu">CPU <span id="score-c">0</span></div>
         </div>
-      </header>
-
-      <!-- CPU ZONE -->
-      <section id="cpu-zone">
-        <div class="player-avatar cpu-av">
-          <div class="av-bubble cpu-bubble">🤖</div>
-          <div class="av-name">Computer</div>
-          <div class="av-count" id="cpu-count">7</div>
-        </div>
-        <div id="cpu-hand-wrap">
-          <div id="cpu-hand"></div>
-        </div>
-      </section>
-
-      <!-- CENTER ARENA -->
-      <section id="arena">
-        <!-- Draw pile -->
-        <div class="pile-col" id="draw-col" onclick="onDraw()">
-          <div class="pile-lbl">DRAW</div>
-          <div id="draw-pile">
-            <div class="card back dp-s1"><span class="btxt">UNO</span></div>
-            <div class="card back dp-s2"><span class="btxt">UNO</span></div>
-            <div class="card back dp-s3"><span class="btxt">UNO</span></div>
-          </div>
-        </div>
-
-        <!-- Info column -->
-        <div id="arena-info">
-          <div id="color-ring-wrap">
-            <div id="color-gem" class="gem-red"></div>
-            <div id="color-name">RED</div>
-          </div>
-          <div id="dir-wheel">↺</div>
-          <div class="think-dots" id="think-dots">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-
-        <!-- Discard pile -->
-        <div class="pile-col">
-          <div class="pile-lbl">DISCARD</div>
-          <div id="discard-pile"></div>
-        </div>
-      </section>
-
-      <!-- PLAYER ZONE -->
-      <section id="player-zone">
-        <div class="player-avatar you-av">
-          <div class="av-bubble you-bubble">😎</div>
-          <div class="av-name">You</div>
-          <div class="av-count you-cnt" id="player-count">7</div>
-        </div>
-        <div id="player-hand-wrap">
-          <div id="player-hand"></div>
-        </div>
-      </section>
-
-      <!-- ACTION BAR -->
-      <footer id="action-bar">
-        <button id="uno-btn" onclick="callUno()" disabled>🔥 UNO!</button>
-      </footer>
-    </div>
-    <!-- /#table -->
-
-    <!-- ── COLOR CHOOSER MODAL ── -->
-    <div id="color-modal">
-      <div id="color-box">
-        <div id="cbox-title">Pick a Color</div>
-        <div id="color-grid">
-          <button class="cbtn cbtn-red" onclick="chooseColor('red')">
-            🔴<span>RED</span>
-          </button>
-          <button class="cbtn cbtn-blue" onclick="chooseColor('blue')">
-            🔵<span>BLUE</span>
-          </button>
-          <button class="cbtn cbtn-green" onclick="chooseColor('green')">
-            🟢<span>GREEN</span>
-          </button>
-          <button class="cbtn cbtn-yellow" onclick="chooseColor('yellow')">
-            🟡<span>YELLOW</span>
-          </button>
-        </div>
+        <button id="settings-ingame-btn" onclick="showSettings('game')">⚙</button>
       </div>
-    </div>
+    </header>
 
-    <!-- ── TOAST ── -->
-    <div id="toast"></div>
+    <!-- CIRCULAR ARENA — opponents placed around the felt table -->
+    <div id="circular-arena">
 
-    <!-- ── WIN OVERLAY ── -->
-    <div id="win-overlay">
-      <div id="confetti-wrap"></div>
-      <div id="win-panel">
-        <div id="win-emoji">🎉</div>
-        <div id="win-title">YOU WIN!</div>
-        <div id="win-sub">Computer ran out of cards!</div>
-        <div id="win-scores">
-          <div class="wscore">
-            <div class="wlbl">YOU</div>
-            <div class="wval" id="wp">0</div>
+      <!-- Opponent slots are injected here by JS (above felt-table div as absolute) -->
+      <div id="opponents-wrap"></div>
+
+      <!-- The felt table oval in the center -->
+      <div id="felt-table">
+        <section id="arena">
+          <!-- Draw pile -->
+          <div class="pile-col" onclick="onDraw()">
+            <div class="pile-lbl">DRAW</div>
+            <div id="draw-pile">
+              <div class="card back dp-s1"><div class="oval"></div><span class="btxt">UNO</span></div>
+              <div class="card back dp-s2"><div class="oval"></div><span class="btxt">UNO</span></div>
+              <div class="card back dp-s3"><div class="oval"></div><span class="btxt">UNO</span></div>
+            </div>
+            <div class="draw-hint">Tap to draw</div>
           </div>
-          <div class="wscore">
-            <div class="wlbl">CPU</div>
-            <div class="wval" id="wc">0</div>
+
+          <!-- Info panel -->
+          <div id="arena-info">
+            <div class="arena-color-gem-wrap">
+              <div id="color-gem" class="gem-red"></div>
+              <div id="color-name">RED</div>
+            </div>
+            <div id="dir-wheel" class="dir-wheel">↺</div>
+            <div class="deck-counter"><span id="deck-count">93</span><br/><small>left</small></div>
+            <div class="think-dots" id="think-dots">
+              <span></span><span></span><span></span>
+            </div>
           </div>
-        </div>
-        <button id="play-again-btn" onclick="initGame()">▶ Play Again</button>
+
+          <!-- Discard pile -->
+          <div class="pile-col">
+            <div class="pile-lbl">DISCARD</div>
+            <div id="discard-pile"></div>
+          </div>
+        </section>
       </div>
-    </div>
 
-    <script src="game.js"></script>
-  </body>
+    </div><!-- /#circular-arena -->
+
+    <!-- PLAYER ZONE (bottom) -->
+    <section id="player-zone">
+      <div class="player-avatar">
+        <div class="av-bubble you-bubble" id="you-bubble">😎</div>
+        <div class="av-name">You</div>
+        <div class="av-count you-cnt" id="player-count">7</div>
+      </div>
+      <div id="player-hand-wrap"><div id="player-hand"></div></div>
+    </section>
+
+    <!-- ACTION BAR -->
+    <footer id="action-bar">
+      <div id="diff-pill">MEDIUM</div>
+      <button id="uno-btn" onclick="callUno()" disabled>🔥 UNO!</button>
+      <div id="action-right">
+        <div class="action-hint" id="action-hint">Pick a card</div>
+      </div>
+    </footer>
+
+  </div><!-- /#table -->
+</div><!-- /#screen-game -->
+
+<!-- MODALS -->
+<div id="color-modal">
+  <div id="color-box">
+    <div id="cbox-title">Pick a Color</div>
+    <div id="color-grid">
+      <button class="cbtn cbtn-r" onclick="chooseColor('red')">🔴<span>Red</span></button>
+      <button class="cbtn cbtn-b" onclick="chooseColor('blue')">🔵<span>Blue</span></button>
+      <button class="cbtn cbtn-g" onclick="chooseColor('green')">🟢<span>Green</span></button>
+      <button class="cbtn cbtn-y" onclick="chooseColor('yellow')">🟡<span>Yellow</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="quit-modal">
+  <div class="qbox">
+    <div class="qbox-icon">🚪</div>
+    <div class="qbox-title">Quit Game?</div>
+    <div class="qbox-sub">Your progress will be lost</div>
+    <div class="qbox-btns">
+      <button class="qbtn qbtn-cancel" onclick="closeQuit()">Keep Playing</button>
+      <button class="qbtn qbtn-quit"   onclick="quitToHome()">Quit</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="win-overlay">
+  <div id="confetti-wrap"></div>
+  <div id="win-panel">
+    <div id="win-emoji">🎉</div>
+    <div id="win-title">YOU WIN!</div>
+    <div id="win-sub">Computer ran out of cards!</div>
+    <div id="win-score-row"></div>
+    <div class="win-btns">
+      <button id="play-again-btn" onclick="initGame()">▶ Play Again</button>
+      <button id="home-from-win"  onclick="quitToHome()">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
 </html>
