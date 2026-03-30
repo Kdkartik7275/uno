@@ -78,8 +78,8 @@ function startGame(code) {
     currentValue: starter.value,
     direction: 1,
     turnSeat: 0,
-    drawStack: 0, // for stacking draw2/draw4 (optional extension)
-    drawnThisTurn: false, // has the current player drawn this turn?
+    drawStack: 0,
+    drawnThisTurn: false,
   };
 
   broadcastGameState(code);
@@ -151,7 +151,7 @@ function applyCardEffect(code, playedCard, chosenColor) {
       break;
     case 'reverse':
       g.direction *= -1;
-      if (n === 2) nextTurn(g, n, 2); // In 2-player reverse acts like skip
+      if (n === 2) nextTurn(g, n, 2);
       else nextTurn(g, n, 1);
       break;
     case 'draw2': {
@@ -159,7 +159,6 @@ function applyCardEffect(code, playedCard, chosenColor) {
       const victim = g.turnSeat;
       reshuffleIfNeeded(g);
       for (let i = 0; i < 2; i++) g.hands[victim].push(g.deck.pop());
-      const vName = room.players[victim]?.name || 'Someone';
       io.to(room.players[victim]?.id).emit('game:toast', { msg: 'You draw 2! ✌️', dur: 2500 });
       nextTurn(g, n, 1);
       break;
@@ -246,7 +245,6 @@ io.on('connection', (socket) => {
     const seat = socket._unoSeat;
     if (g.turnSeat !== seat) { socket.emit('game:toast', { msg: "Not your turn!", dur: 1500 }); return; }
 
-    // Find card in hand
     const hand = g.hands[seat];
     const idx = hand.findIndex(c => c.color === card.color && c.value === card.value);
     if (idx === -1) { socket.emit('game:toast', { msg: "Card not in hand", dur: 1500 }); return; }
@@ -255,26 +253,22 @@ io.on('connection', (socket) => {
       socket.emit('game:toast', { msg: "Can't play that card!", dur: 1500 }); return;
     }
 
-    // Validate drawn-card-only rule
     if (g.drawnThisTurn) {
       if (idx !== hand.length - 1) {
         socket.emit('game:toast', { msg: "You can only play the drawn card!", dur: 1500 }); return;
       }
     }
 
-    // Play the card
     hand.splice(idx, 1);
     g.discard.push(card);
     g.drawnThisTurn = false;
 
-    // Broadcast the played card to all players for animation
     io.to(code).emit('game:card_played', {
       seat,
       card,
       playerName: room.players[seat]?.name,
     });
 
-    // Check win
     if (hand.length === 0) {
       broadcastGameState(code);
       io.to(code).emit('game:over', { winnerSeat: seat, winnerName: room.players[seat]?.name });
@@ -282,21 +276,16 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // UNO shout (server-side broadcast)
     if (hand.length === 1) {
       io.to(code).emit('game:toast', { msg: `${room.players[seat]?.name} says UNO! 🔥`, dur: 2500 });
     }
 
-    // Wild — request color choice from client
     if (card.color === 'wild' && !chosenColor) {
       applyCardEffect(code, card, null);
       broadcastGameState(code);
       socket.emit('game:choose_color', { card });
-      // Pause turn until color chosen
       g.awaitingColor = true;
       g.colorFromSeat = seat;
-      // Temporarily revert turn — we'll finalize after color chosen
-      // Actually, let's just re-broadcast after color is set
       return;
     }
 
@@ -333,13 +322,18 @@ io.on('connection', (socket) => {
     g.hands[seat].push(card);
     g.drawnThisTurn = true;
 
-    broadcastGameState(code);
-
     if (canPlay(card, g.currentColor, g.currentValue)) {
+      // Card is playable — let the player decide to play it or pass
+      broadcastGameState(code);
       socket.emit('game:drew_playable', { card });
     } else {
-      // Auto-pass after a short delay — frontend will show message
-      socket.emit('game:toast', { msg: 'No playable card — pass your turn', dur: 2000 });
+      // ── FIX: card is NOT playable → auto-advance turn now ──
+      io.to(code).emit('game:toast', {
+        msg: `${room.players[seat]?.name} drew — no match, turn passes`,
+        dur: 2000,
+      });
+      nextTurn(g, room.players.length, 1);  // advance to next player
+      broadcastGameState(code);              // send new turnSeat to ALL players
     }
   });
 
@@ -378,15 +372,12 @@ io.on('connection', (socket) => {
     io.to(code).emit('room:player_left', { seat, name: playerName });
 
     if (room.started && room.game) {
-      // End game if someone leaves mid-game
       io.to(code).emit('game:over', { winnerSeat: -1, winnerName: null, abandoned: true });
       room.started = false;
     }
 
-    // Remove player
     if (room.players[seat]) room.players[seat] = null;
 
-    // Clean up empty rooms
     if (room.players.every(p => !p)) {
       delete rooms[code];
       console.log(`Room ${code} cleaned up`);
