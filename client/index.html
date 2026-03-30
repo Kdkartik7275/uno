@@ -4,8 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
   <meta name="theme-color" content="#080018"/>
-  <title>UNO!</title>
-  <style>html,body{background:#080018!important;}</style>
+  <title>UNO! Multiplayer</title>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -47,11 +46,8 @@
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-home" class="screen">
   <div class="home-bg">
-    <div class="hblob hb1"></div>
-    <div class="hblob hb2"></div>
-    <div class="hblob hb3"></div>
-    <div class="hblob hb4"></div>
-    <div class="hblob hb5"></div>
+    <div class="hblob hb1"></div><div class="hblob hb2"></div><div class="hblob hb3"></div>
+    <div class="hblob hb4"></div><div class="hblob hb5"></div>
   </div>
   <div class="home-floaters">
     <div class="hf hf-r" style="--hfx:-130px;--hfy:-55px;--hfr:-20deg;--hfd:0s">5</div>
@@ -70,76 +66,41 @@
     </div>
     <p class="home-sub">The Classic Card Game</p>
     <div class="home-btns">
-      <button class="hbtn hbtn-play" onclick="showModes()">
-        <span>▶</span> Play Now
-      </button>
-      <button class="hbtn hbtn-settings" onclick="showSettings('home')">
-        <span>⚙</span> Settings
-      </button>
+      <button class="hbtn hbtn-play"  onclick="showModes()"><span>🤖</span> VS Computer</button>
+      <button class="hbtn hbtn-multi" onclick="showLobby()"><span>👥</span> Multiplayer</button>
+      <button class="hbtn hbtn-settings" onclick="showSettings()"><span>⚙</span> Settings</button>
     </div>
   </div>
 </div>
 
 <!-- ╔══════════════════════════════════════════════╗
-     ║  SCREEN 3 — MODE SELECT                      ║
+     ║  SCREEN 3 — VS CPU MODE SELECT               ║
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-modes" class="screen">
   <div class="overlay-bg"></div>
   <div class="panel modes-panel">
     <button class="panel-back" onclick="showHome()">‹ Back</button>
-    <div class="panel-title">Game Mode</div>
-    <div class="panel-sub">How do you want to play?</div>
-
-    <div class="mode-cards">
-
-      <!-- VS COMPUTER -->
-      <div class="mode-tile mc-cpu">
-        <div class="mt-header">
-          <div class="mt-icon">🤖</div>
-          <div>
-            <div class="mt-name">VS Computer</div>
-            <div class="mt-desc">Play against AI opponents</div>
-          </div>
+    <div class="panel-title">VS Computer</div>
+    <div class="panel-sub">Configure your game</div>
+    <div class="mode-tile mc-cpu">
+      <div class="mt-header"><div class="mt-icon">🤖</div><div><div class="mt-name">CPU Opponents</div><div class="mt-desc">Play against smart AI</div></div></div>
+      <div class="mt-players-row">
+        <div class="mt-players-lbl">Opponents</div>
+        <div class="mt-player-btns">
+          <button class="mpb active" onclick="selectCpuCount(this,1)">1</button>
+          <button class="mpb"        onclick="selectCpuCount(this,2)">2</button>
+          <button class="mpb"        onclick="selectCpuCount(this,3)">3</button>
         </div>
-        <div class="mt-players-row">
-          <div class="mt-players-lbl">CPU Opponents</div>
-          <div class="mt-player-btns">
-            <button class="mpb active" data-mode="cpu" data-count="1" onclick="selectPlayers(this,1,'cpu')">1</button>
-            <button class="mpb"        data-mode="cpu" data-count="2" onclick="selectPlayers(this,2,'cpu')">2</button>
-            <button class="mpb"        data-mode="cpu" data-count="3" onclick="selectPlayers(this,3,'cpu')">3</button>
-          </div>
-        </div>
-        <div class="mt-diff-row">
-          <div class="mt-players-lbl">Difficulty</div>
-          <div class="mt-diff-btns">
-            <button class="mdb" data-diff="easy"   onclick="selectDiff(this,'easy')">Easy</button>
-            <button class="mdb active" data-diff="medium" onclick="selectDiff(this,'medium')">Medium</button>
-            <button class="mdb" data-diff="hard"   onclick="selectDiff(this,'hard')">Hard</button>
-          </div>
-        </div>
-        <button class="mt-play-btn" onclick="startVsCpu()">▶ Start Game</button>
       </div>
-
-      <!-- MULTIPLAYER -->
-      <div class="mode-tile mc-multi">
-        <div class="mt-header">
-          <div class="mt-icon">👥</div>
-          <div>
-            <div class="mt-name">Multiplayer</div>
-            <div class="mt-desc">Play with friends online</div>
-          </div>
+      <div class="mt-diff-row">
+        <div class="mt-players-lbl">Difficulty</div>
+        <div class="mt-diff-btns">
+          <button class="mdb"         onclick="selectDiff(this,'easy')">Easy</button>
+          <button class="mdb active"  onclick="selectDiff(this,'medium')">Medium</button>
+          <button class="mdb"         onclick="selectDiff(this,'hard')">Hard</button>
         </div>
-        <div class="mt-players-row">
-          <div class="mt-players-lbl">Total Players</div>
-          <div class="mt-player-btns">
-            <button class="mpb active" data-mode="mp" data-count="2" onclick="selectPlayers(this,2,'mp')">2</button>
-            <button class="mpb"        data-mode="mp" data-count="3" onclick="selectPlayers(this,3,'mp')">3</button>
-            <button class="mpb"        data-mode="mp" data-count="4" onclick="selectPlayers(this,4,'mp')">4</button>
-          </div>
-        </div>
-        <button class="mt-play-btn mt-play-multi" onclick="showMultiLobby()">▶ Go to Lobby</button>
       </div>
-
+      <button class="mt-play-btn" onclick="startVsCpu()">▶ Start Game</button>
     </div>
   </div>
 </div>
@@ -150,43 +111,51 @@
 <div id="screen-lobby" class="screen">
   <div class="overlay-bg"></div>
   <div class="panel lobby-panel">
-    <button class="panel-back" onclick="showScreen('screen-modes')">‹ Back</button>
-    <div class="panel-title">Multiplayer Lobby</div>
-    <div class="panel-sub" id="lobby-sub">Waiting for players…</div>
+    <button class="panel-back" onclick="showHome()">‹ Back</button>
+    <div class="panel-title">Multiplayer</div>
+    <div class="panel-sub" id="lobby-sub">Connect to play with friends</div>
 
-    <div class="lobby-room-code">
+    <!-- Connection status -->
+    <div class="lobby-conn-bar" id="lobby-conn-bar">
+      <div class="lstat-dot" id="lstat-dot"></div>
+      <span id="lobby-status-txt">Not connected</span>
+    </div>
+
+    <!-- Name input -->
+    <div class="lobby-name-row">
+      <span class="lobby-label">Your Name</span>
+      <input type="text" id="player-name-input" class="lobby-input" placeholder="Enter your name" maxlength="16" value="Player"/>
+    </div>
+
+    <!-- Room code display -->
+    <div class="lobby-room-code" id="lobby-code-wrap" style="display:none">
       <div class="lrc-label">ROOM CODE</div>
       <div class="lrc-code" id="lobby-code">------</div>
       <button class="lrc-copy" onclick="copyRoomCode()">📋 Copy</button>
     </div>
 
+    <!-- Player list -->
     <div class="lobby-players" id="lobby-players"></div>
 
-    <div class="lobby-status">
-      <div class="lstat-dot"></div>
-      <span id="lobby-status-txt">Connecting to server…</span>
+    <!-- Action buttons -->
+    <div class="lobby-action-grid">
+      <button class="lbtn lbtn-create" onclick="createRoom()">🏠 Create Room</button>
+      <button class="lbtn lbtn-join"   onclick="promptJoinRoom()">🔗 Join Room</button>
     </div>
 
-    <div class="lobby-bottom-btns">
-      <button class="lbtn lbtn-invite" onclick="createRoom()">🏠 Create Room</button>
-      <button class="lbtn lbtn-join"   onclick="joinRoom()">🔗 Join Room</button>
-    </div>
-    <div class="lobby-bottom-btns" style="margin-top:-6px">
-      <button class="lbtn lbtn-copy"  onclick="copyRoomCode()">📋 Copy Code</button>
-      <button class="lbtn lbtn-start" id="lobby-start-btn" onclick="startMultiGame()" disabled>
-        ▶ Start Game
-      </button>
-    </div>
+    <button class="lbtn lbtn-start" id="lobby-start-btn" onclick="startMultiGame()" disabled style="width:100%;margin-top:8px">
+      ▶ Start Game (Host Only)
+    </button>
 
     <div class="lobby-coming-soon">
       <div class="lcs-icon">📡</div>
-      <div class="lcs-text">Run <code style="background:rgba(0,0,0,.3);padding:1px 6px;border-radius:4px">node server.js</code> on your machine, then open this page from the same network to play online with friends.</div>
+      <div class="lcs-text">Run <code>npm install &amp;&amp; npm start</code> then share your IP with friends on the same network</div>
     </div>
   </div>
 </div>
 
 <!-- ╔══════════════════════════════════════════════╗
-     ║  SETTINGS MODAL (overlays current page)      ║
+     ║  SETTINGS MODAL                              ║
      ╚══════════════════════════════════════════════╝ -->
 <div id="settings-modal">
   <div id="settings-modal-box">
@@ -194,59 +163,29 @@
       <div class="smodal-title">⚙ Settings</div>
       <button class="smodal-close" onclick="closeSettings()">✕</button>
     </div>
-
     <div class="settings-rows">
-
       <div class="srow">
-        <div class="sinfo">
-          <div class="sname">🔊 Sound Effects</div>
-          <div class="sdesc">Card plays, draws, UNO shout</div>
-        </div>
-        <label class="tog">
-          <input type="checkbox" id="snd-sfx" checked onchange="saveSetting('sfx',this.checked)"/>
-          <span class="tog-slider"></span>
-        </label>
+        <div class="sinfo"><div class="sname">🔊 Sound Effects</div><div class="sdesc">Card plays, draws, UNO shout</div></div>
+        <label class="tog"><input type="checkbox" id="snd-sfx" checked onchange="saveSetting('sfx',this.checked)"/><span class="tog-slider"></span></label>
       </div>
-
       <div class="srow">
-        <div class="sinfo">
-          <div class="sname">📳 Vibration</div>
-          <div class="sdesc">Haptic feedback on mobile</div>
-        </div>
-        <label class="tog">
-          <input type="checkbox" id="set-vibe" checked onchange="saveSetting('vibe',this.checked)"/>
-          <span class="tog-slider"></span>
-        </label>
+        <div class="sinfo"><div class="sname">📳 Vibration</div><div class="sdesc">Haptic feedback on mobile</div></div>
+        <label class="tog"><input type="checkbox" id="set-vibe" checked onchange="saveSetting('vibe',this.checked)"/><span class="tog-slider"></span></label>
       </div>
-
       <div class="srow">
-        <div class="sinfo">
-          <div class="sname">⚡ Animations</div>
-          <div class="sdesc">Smooth card effects</div>
-        </div>
-        <label class="tog">
-          <input type="checkbox" id="set-anim" checked onchange="saveSetting('anim',this.checked)"/>
-          <span class="tog-slider"></span>
-        </label>
+        <div class="sinfo"><div class="sname">⚡ Animations</div><div class="sdesc">Smooth card effects</div></div>
+        <label class="tog"><input type="checkbox" id="set-anim" checked onchange="saveSetting('anim',this.checked)"/><span class="tog-slider"></span></label>
       </div>
-
       <div class="srow">
-        <div class="sinfo">
-          <div class="sname">🃏 Card Style</div>
-          <div class="sdesc">Visual theme for cards</div>
-        </div>
+        <div class="sinfo"><div class="sname">🃏 Card Style</div><div class="sdesc">Visual theme for cards</div></div>
         <select class="ssel" id="set-style" onchange="saveSetting('style',this.value)">
           <option value="classic">Classic</option>
           <option value="neon">Neon</option>
           <option value="pastel">Pastel</option>
         </select>
       </div>
-
       <div class="srow">
-        <div class="sinfo">
-          <div class="sname">🎨 Table Theme</div>
-          <div class="sdesc">Felt colour</div>
-        </div>
+        <div class="sinfo"><div class="sname">🎨 Table Theme</div><div class="sdesc">Felt colour</div></div>
         <select class="ssel" id="set-table" onchange="saveSetting('table',this.value)">
           <option value="green">Forest Green</option>
           <option value="blue">Ocean Blue</option>
@@ -255,22 +194,16 @@
           <option value="dark">Midnight Dark</option>
         </select>
       </div>
-
     </div>
   </div>
 </div>
 
 <!-- ╔══════════════════════════════════════════════╗
-     ║  SCREEN 6 — GAME (Circular layout)           ║
+     ║  SCREEN 5 — GAME (VS CPU)                    ║
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-game" class="screen">
-
-  <!-- Background world / globe -->
   <div id="game-world"></div>
-
   <div id="table">
-
-    <!-- TOP BAR -->
     <header id="topbar">
       <button id="back-btn" onclick="confirmQuit()">←</button>
       <div id="logo">UNO</div>
@@ -278,22 +211,15 @@
         <div id="turn-pill" class="turn-you">YOUR TURN</div>
         <div id="scores">
           <div class="schip you">YOU <span id="score-p">0</span></div>
-          <div class="schip cpu">CPU <span id="score-c">0</span></div>
+          <div class="schip cpu" id="score-cpu-chip">CPU <span id="score-c">0</span></div>
         </div>
-        <button id="settings-ingame-btn" onclick="showSettings('game')">⚙</button>
+        <button id="settings-ingame-btn" onclick="showSettings()">⚙</button>
       </div>
     </header>
-
-    <!-- CIRCULAR ARENA — opponents placed around the felt table -->
     <div id="circular-arena">
-
-      <!-- Opponent slots are injected here by JS (above felt-table div as absolute) -->
       <div id="opponents-wrap"></div>
-
-      <!-- The felt table oval in the center -->
       <div id="felt-table">
         <section id="arena">
-          <!-- Draw pile -->
           <div class="pile-col" onclick="onDraw()">
             <div class="pile-lbl">DRAW</div>
             <div id="draw-pile">
@@ -303,8 +229,6 @@
             </div>
             <div class="draw-hint">Tap to draw</div>
           </div>
-
-          <!-- Info panel -->
           <div id="arena-info">
             <div class="arena-color-gem-wrap">
               <div id="color-gem" class="gem-red"></div>
@@ -312,22 +236,15 @@
             </div>
             <div id="dir-wheel" class="dir-wheel">↺</div>
             <div class="deck-counter"><span id="deck-count">93</span><br/><small>left</small></div>
-            <div class="think-dots" id="think-dots">
-              <span></span><span></span><span></span>
-            </div>
+            <div class="think-dots" id="think-dots"><span></span><span></span><span></span></div>
           </div>
-
-          <!-- Discard pile -->
           <div class="pile-col">
             <div class="pile-lbl">DISCARD</div>
             <div id="discard-pile"></div>
           </div>
         </section>
       </div>
-
-    </div><!-- /#circular-arena -->
-
-    <!-- PLAYER ZONE (bottom) -->
+    </div>
     <section id="player-zone">
       <div class="player-avatar">
         <div class="av-bubble you-bubble" id="you-bubble">😎</div>
@@ -336,8 +253,6 @@
       </div>
       <div id="player-hand-wrap"><div id="player-hand"></div></div>
     </section>
-
-    <!-- ACTION BAR -->
     <footer id="action-bar">
       <div id="diff-pill">MEDIUM</div>
       <button id="uno-btn" onclick="callUno()" disabled>🔥 UNO!</button>
@@ -346,11 +261,76 @@
         <button id="pass-btn" onclick="passTurn()" style="display:none">✋ Pass</button>
       </div>
     </footer>
+  </div>
+</div>
 
-  </div><!-- /#table -->
-</div><!-- /#screen-game -->
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SCREEN 6 — MULTIPLAYER GAME                 ║
+     ╚══════════════════════════════════════════════╝ -->
+<div id="screen-mp-game" class="screen">
+  <div id="mp-game-world"></div>
+  <div id="mp-table">
+    <header id="mp-topbar">
+      <button id="mp-back-btn" onclick="mpConfirmQuit()">←</button>
+      <div id="mp-logo">UNO</div>
+      <div id="mp-topbar-right">
+        <div id="mp-turn-pill" class="turn-you">WAITING</div>
+        <div id="mp-room-badge" class="mp-room-badge">ROOM: ------</div>
+        <button id="mp-settings-btn" onclick="showSettings()">⚙</button>
+      </div>
+    </header>
 
-<!-- MODALS -->
+    <div id="mp-circular-arena">
+      <div id="mp-opponents-wrap"></div>
+      <div id="mp-felt-table">
+        <section id="mp-arena">
+          <div class="pile-col" onclick="mpOnDraw()">
+            <div class="pile-lbl">DRAW</div>
+            <div id="mp-draw-pile">
+              <div class="card back dp-s1"><div class="oval"></div><span class="btxt">UNO</span></div>
+              <div class="card back dp-s2"><div class="oval"></div><span class="btxt">UNO</span></div>
+              <div class="card back dp-s3"><div class="oval"></div><span class="btxt">UNO</span></div>
+            </div>
+            <div class="draw-hint">Tap to draw</div>
+          </div>
+          <div id="mp-arena-info">
+            <div class="arena-color-gem-wrap">
+              <div id="mp-color-gem" class="gem-red"></div>
+              <div id="mp-color-name">RED</div>
+            </div>
+            <div id="mp-dir-wheel" class="dir-wheel">↺</div>
+            <div class="deck-counter"><span id="mp-deck-count">93</span><br/><small>left</small></div>
+            <div class="think-dots" id="mp-think-dots"><span></span><span></span><span></span></div>
+          </div>
+          <div class="pile-col">
+            <div class="pile-lbl">DISCARD</div>
+            <div id="mp-discard-pile"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section id="mp-player-zone">
+      <div class="player-avatar">
+        <div class="av-bubble you-bubble" id="mp-you-bubble">😎</div>
+        <div class="av-name" id="mp-you-name">You</div>
+        <div class="av-count you-cnt" id="mp-player-count">0</div>
+      </div>
+      <div id="mp-player-hand-wrap"><div id="mp-player-hand"></div></div>
+    </section>
+
+    <footer id="mp-action-bar">
+      <div class="mp-player-badge" id="mp-player-badge">P1</div>
+      <button id="mp-uno-btn" onclick="mpCallUno()" disabled>🔥 UNO!</button>
+      <div id="mp-action-right">
+        <div class="action-hint" id="mp-action-hint">Waiting…</div>
+        <button id="mp-pass-btn" onclick="mpPassTurn()" style="display:none">✋ Pass</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- SHARED MODALS -->
 <div id="color-modal">
   <div id="color-box">
     <div id="cbox-title">Pick a Color</div>
@@ -370,7 +350,7 @@
     <div class="qbox-sub">Your progress will be lost</div>
     <div class="qbox-btns">
       <button class="qbtn qbtn-cancel" onclick="closeQuit()">Keep Playing</button>
-      <button class="qbtn qbtn-quit"   onclick="quitToHome()">Quit</button>
+      <button class="qbtn qbtn-quit"   onclick="doQuit()">Quit</button>
     </div>
   </div>
 </div>
@@ -382,15 +362,17 @@
   <div id="win-panel">
     <div id="win-emoji">🎉</div>
     <div id="win-title">YOU WIN!</div>
-    <div id="win-sub">Computer ran out of cards!</div>
+    <div id="win-sub">You ran out of cards!</div>
     <div id="win-score-row"></div>
     <div class="win-btns">
-      <button id="play-again-btn" onclick="initGame()">▶ Play Again</button>
+      <button id="play-again-btn" onclick="onPlayAgain()">▶ Play Again</button>
       <button id="home-from-win"  onclick="quitToHome()">🏠 Home</button>
     </div>
   </div>
 </div>
 
+<!-- Socket.IO from CDN (works offline from server when hosted locally) -->
+<script src="/socket.io/socket.io.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
