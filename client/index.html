@@ -42,34 +42,90 @@
 </div>
 
 <!-- ╔══════════════════════════════════════════════╗
-     ║  SCREEN 2 — HOME                             ║
+     ║  SCREEN 2 — HOME (Desktop two-column)        ║
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-home" class="screen">
   <div class="home-bg">
     <div class="hblob hb1"></div><div class="hblob hb2"></div><div class="hblob hb3"></div>
     <div class="hblob hb4"></div><div class="hblob hb5"></div>
   </div>
+
+  <!-- Background blurred floating cards (spread wider) -->
   <div class="home-floaters">
-    <div class="hf hf-r" style="--hfx:-130px;--hfy:-55px;--hfr:-20deg;--hfd:0s">5</div>
-    <div class="hf hf-b" style="--hfx:120px;--hfy:-75px;--hfr:16deg;--hfd:.35s">+2</div>
-    <div class="hf hf-g" style="--hfx:-100px;--hfy:85px;--hfr:13deg;--hfd:.7s">↺</div>
-    <div class="hf hf-y" style="--hfx:140px;--hfy:100px;--hfr:-12deg;--hfd:1.05s">★</div>
-    <div class="hf hf-r" style="--hfx:70px;--hfy:-130px;--hfr:24deg;--hfd:1.4s">⊘</div>
-    <div class="hf hf-b" style="--hfx:-65px;--hfy:150px;--hfr:-22deg;--hfd:1.75s">9</div>
-    <div class="hf hf-g" style="--hfx:180px;--hfy:-20px;--hfr:8deg;--hfd:.5s">3</div>
-    <div class="hf hf-y" style="--hfx:-170px;--hfy:20px;--hfr:-15deg;--hfd:1.1s">+4</div>
+    <div class="hf hf-r" style="--hfx:-38vw;--hfy:-18vh;--hfr:-20deg;--hfd:0s">5</div>
+    <div class="hf hf-b" style="--hfx:36vw;--hfy:-22vh;--hfr:16deg;--hfd:.35s">+2</div>
+    <div class="hf hf-g" style="--hfx:-34vw;--hfy:20vh;--hfr:13deg;--hfd:.7s">↺</div>
+    <div class="hf hf-y" style="--hfx:38vw;--hfy:24vh;--hfr:-12deg;--hfd:1.05s">★</div>
+    <div class="hf hf-r" style="--hfx:10vw;--hfy:-36vh;--hfr:24deg;--hfd:1.4s">⊘</div>
+    <div class="hf hf-b" style="--hfx:-12vw;--hfy:38vh;--hfr:-22deg;--hfd:1.75s">9</div>
+    <div class="hf hf-g" style="--hfx:44vw;--hfy:-4vh;--hfr:8deg;--hfd:.5s">3</div>
+    <div class="hf hf-y" style="--hfx:-44vw;--hfy:4vh;--hfr:-15deg;--hfd:1.1s">+4</div>
+    <div class="hf hf-r" style="--hfx:22vw;--hfy:38vh;--hfr:18deg;--hfd:0.9s">7</div>
+    <div class="hf hf-b" style="--hfx:-24vw;--hfy:-36vh;--hfr:-10deg;--hfd:1.5s">↻</div>
   </div>
+
+  <!-- Two-column content -->
   <div class="home-content">
-    <div class="home-logo-box">
-      <div class="home-logo">UNO</div>
-      <div class="home-logo-glow">UNO</div>
+
+    <!-- LEFT: Branding -->
+    <div class="home-left">
+      <div class="home-logo-box">
+        <div class="home-logo">UNO</div>
+        <div class="home-logo-glow">UNO</div>
+      </div>
+      <p class="home-sub">The Classic Card Game</p>
+      <p class="home-tagline">Play against smart AI opponents or challenge friends in real-time multiplayer. First to empty their hand wins!</p>
+      <div class="home-card-preview">
+        <div class="hcp hcp-r">7</div>
+        <div class="hcp hcp-b">+2</div>
+        <div class="hcp hcp-g">↺</div>
+        <div class="hcp hcp-y">⊘</div>
+        <div class="hcp hcp-w">★</div>
+      </div>
+      <div class="home-stats">
+        <div class="home-stat">
+          <div class="home-stat-val">108</div>
+          <div class="home-stat-lbl">Cards</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-val">2–4</div>
+          <div class="home-stat-lbl">Players</div>
+        </div>
+        <div class="home-stat">
+          <div class="home-stat-val">3</div>
+          <div class="home-stat-lbl">Difficulties</div>
+        </div>
+      </div>
     </div>
-    <p class="home-sub">The Classic Card Game</p>
-    <div class="home-btns">
-      <button class="hbtn hbtn-play"  onclick="showModes()"><span>🤖</span> VS Computer</button>
-      <button class="hbtn hbtn-multi" onclick="showLobby()"><span>👥</span> Multiplayer</button>
-      <button class="hbtn hbtn-settings" onclick="showSettings()"><span>⚙</span> Settings</button>
+
+    <!-- RIGHT: Menu -->
+    <div class="home-right">
+      <div class="home-menu-title">Choose Mode</div>
+      <div class="home-btns">
+        <button class="hbtn hbtn-play" onclick="showModes()">
+          <div class="hbtn-icon">🤖</div>
+          <div class="hbtn-label">
+            <div class="hbtn-title">VS Computer</div>
+            <div class="hbtn-desc">1–3 AI opponents · 3 difficulty levels</div>
+          </div>
+        </button>
+        <button class="hbtn hbtn-multi" onclick="showLobby()">
+          <div class="hbtn-icon">👥</div>
+          <div class="hbtn-label">
+            <div class="hbtn-title">Multiplayer</div>
+            <div class="hbtn-desc">Play with friends on local network</div>
+          </div>
+        </button>
+        <button class="hbtn hbtn-settings" onclick="showSettings()">
+          <div class="hbtn-icon">⚙</div>
+          <div class="hbtn-label">
+            <div class="hbtn-title">Settings</div>
+            <div class="hbtn-desc">Sound, themes, card styles</div>
+          </div>
+        </button>
+      </div>
     </div>
+
   </div>
 </div>
 
@@ -78,26 +134,43 @@
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-modes" class="screen">
   <div class="overlay-bg"></div>
+  <!-- Decorative corner cards -->
+  <div class="overlay-deco">
+    <div class="ov-card ov-card-1"></div>
+    <div class="ov-card ov-card-2"></div>
+    <div class="ov-card ov-card-3"></div>
+    <div class="ov-card ov-card-4"></div>
+    <div class="ov-card ov-card-5"></div>
+    <div class="ov-card ov-card-6"></div>
+  </div>
   <div class="panel modes-panel">
     <button class="panel-back" onclick="showHome()">‹ Back</button>
     <div class="panel-title">VS Computer</div>
-    <div class="panel-sub">Configure your game</div>
+    <div class="panel-sub">Configure your match</div>
     <div class="mode-tile mc-cpu">
-      <div class="mt-header"><div class="mt-icon">🤖</div><div><div class="mt-name">CPU Opponents</div><div class="mt-desc">Play against smart AI</div></div></div>
-      <div class="mt-players-row">
-        <div class="mt-players-lbl">Opponents</div>
-        <div class="mt-player-btns">
-          <button class="mpb active" onclick="selectCpuCount(this,1)">1</button>
-          <button class="mpb"        onclick="selectCpuCount(this,2)">2</button>
-          <button class="mpb"        onclick="selectCpuCount(this,3)">3</button>
+      <div class="mt-header">
+        <div class="mt-icon-wrap"><div class="mt-icon">🤖</div></div>
+        <div>
+          <div class="mt-name">CPU Opponents</div>
+          <div class="mt-desc">Smart AI that adapts to your difficulty setting</div>
         </div>
       </div>
-      <div class="mt-diff-row">
-        <div class="mt-players-lbl">Difficulty</div>
-        <div class="mt-diff-btns">
-          <button class="mdb"         onclick="selectDiff(this,'easy')">Easy</button>
-          <button class="mdb active"  onclick="selectDiff(this,'medium')">Medium</button>
-          <button class="mdb"         onclick="selectDiff(this,'hard')">Hard</button>
+      <div class="mt-options-grid">
+        <div class="mt-option-group">
+          <div class="mt-players-lbl">Opponents</div>
+          <div class="mt-player-btns">
+            <button class="mpb active" onclick="selectCpuCount(this,1)">1</button>
+            <button class="mpb"        onclick="selectCpuCount(this,2)">2</button>
+            <button class="mpb"        onclick="selectCpuCount(this,3)">3</button>
+          </div>
+        </div>
+        <div class="mt-option-group">
+          <div class="mt-players-lbl">Difficulty</div>
+          <div class="mt-diff-btns">
+            <button class="mdb"         onclick="selectDiff(this,'easy')">Easy</button>
+            <button class="mdb active"  onclick="selectDiff(this,'medium')">Med</button>
+            <button class="mdb"         onclick="selectDiff(this,'hard')">Hard</button>
+          </div>
         </div>
       </div>
       <button class="mt-play-btn" onclick="startVsCpu()">▶ Start Game</button>
@@ -110,6 +183,14 @@
      ╚══════════════════════════════════════════════╝ -->
 <div id="screen-lobby" class="screen">
   <div class="overlay-bg"></div>
+  <div class="overlay-deco">
+    <div class="ov-card ov-card-1"></div>
+    <div class="ov-card ov-card-2"></div>
+    <div class="ov-card ov-card-3"></div>
+    <div class="ov-card ov-card-4"></div>
+    <div class="ov-card ov-card-5"></div>
+    <div class="ov-card ov-card-6"></div>
+  </div>
   <div class="panel lobby-panel">
     <button class="panel-back" onclick="showHome()">‹ Back</button>
     <div class="panel-title">Multiplayer</div>
@@ -146,11 +227,6 @@
     <button class="lbtn lbtn-start" id="lobby-start-btn" onclick="startMultiGame()" disabled style="width:100%;margin-top:8px">
       ▶ Start Game (Host Only)
     </button>
-
-    <div class="lobby-coming-soon">
-      <div class="lcs-icon">📡</div>
-      <div class="lcs-text">Run <code>npm install &amp;&amp; npm start</code> then share your IP with friends on the same network</div>
-    </div>
   </div>
 </div>
 
@@ -279,7 +355,6 @@
         <button id="mp-settings-btn" onclick="showSettings()">⚙</button>
       </div>
     </header>
-
     <div id="mp-circular-arena">
       <div id="mp-opponents-wrap"></div>
       <div id="mp-felt-table">
@@ -309,7 +384,6 @@
         </section>
       </div>
     </div>
-
     <section id="mp-player-zone">
       <div class="player-avatar">
         <div class="av-bubble you-bubble" id="mp-you-bubble">😎</div>
@@ -318,7 +392,6 @@
       </div>
       <div id="mp-player-hand-wrap"><div id="mp-player-hand"></div></div>
     </section>
-
     <footer id="mp-action-bar">
       <div class="mp-player-badge" id="mp-player-badge">P1</div>
       <button id="mp-uno-btn" onclick="mpCallUno()" disabled>🔥 UNO!</button>
@@ -371,7 +444,6 @@
   </div>
 </div>
 
-<!-- Socket.IO from CDN (works offline from server when hosted locally) -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="game.js"></script>
 </body>

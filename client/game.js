@@ -1,10 +1,9 @@
 /* ═══════════════════════════════════════════════════════════
-   UNO — game.js  |  VS CPU + Online Multiplayer (Separated)
+   UNO — game.js  |  VS CPU + Online Multiplayer
+   Particles removed, clean background only
    ═══════════════════════════════════════════════════════════ */
 
-/* ════════════════════════════════════════════════════════════
-   AUDIO
-   ════════════════════════════════════════════════════════════ */
+/* ════ AUDIO ════════════════════════════════════════════════ */
 let _ctx = null;
 function ac() {
   if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -38,9 +37,7 @@ const SFX = {
 };
 function vibe(p) { if (cfg.vibe && navigator.vibrate) navigator.vibrate(p || 30); }
 
-/* ════════════════════════════════════════════════════════════
-   CONFIG
-   ════════════════════════════════════════════════════════════ */
+/* ════ CONFIG ═══════════════════════════════════════════════ */
 const DEF = { sfx:true, vibe:true, anim:true, style:'classic', table:'green' };
 let cfg = Object.assign({}, DEF);
 function loadCfg() {
@@ -66,9 +63,7 @@ function syncCfgUI() {
   const st = document.getElementById('set-table'); if(st) st.value = cfg.table;
 }
 
-/* ════════════════════════════════════════════════════════════
-   SCREEN NAVIGATION
-   ════════════════════════════════════════════════════════════ */
+/* ════ SCREEN NAV ═══════════════════════════════════════════ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
@@ -85,9 +80,7 @@ function closeSettings() {
   document.getElementById('settings-modal').classList.remove('open');
 }
 
-/* ════════════════════════════════════════════════════════════
-   QUIT HANDLING
-   ════════════════════════════════════════════════════════════ */
+/* ════ QUIT ═════════════════════════════════════════════════ */
 let _quitFromMp = false;
 function confirmQuit()   { SFX.click(); _quitFromMp = false; document.getElementById('quit-modal').classList.add('open'); }
 function mpConfirmQuit() { SFX.click(); _quitFromMp = true;  document.getElementById('quit-modal').classList.add('open'); }
@@ -95,58 +88,17 @@ function closeQuit()     { SFX.click(); document.getElementById('quit-modal').cl
 function doQuit()        { if (_quitFromMp) mpQuitGame(); else quitCpuGame(); }
 function quitToHome()    { document.getElementById('win-overlay').classList.remove('show'); showHome(); }
 
-/* ════════════════════════════════════════════════════════════
-   WORLD / ATMOSPHERE BUILDER (shared)
-   ════════════════════════════════════════════════════════════ */
-let _particleIv = null, _fireflyIv = null;
+/* ════ WORLD BUILDER — NO PARTICLES ════════════════════════
+   All particle / firefly / speed-line spawning removed.
+   The game-world div gets its background purely from CSS. */
 function buildGameWorld(worldId) {
   const world = document.getElementById(worldId);
-  if (!world) return;
-  world.innerHTML = '';
+  if (world) world.innerHTML = ''; // clear anything leftover
+}
+function startWorldAnimations() { /* nothing — no particles */ }
+function stopWorldAnimations()  { /* nothing */ }
 
-  const stars = document.createElement('div'); stars.className = 'star-layer'; world.appendChild(stars);
-  for (let n = 1; n <= 4; n++) { const nb = document.createElement('div'); nb.className = `nebula nebula-${n}`; world.appendChild(nb); }
-  const hg = document.createElement('div'); hg.className = 'horizon-glow'; world.appendChild(hg);
-
-  // Speed lines
-  for (let sl = 0; sl < 6; sl++) {
-    const line = document.createElement('div'); line.className = 'speed-line';
-    line.style.cssText = `top:${Math.random()*70+10}%;left:${Math.random()*20-20}%;width:${Math.random()*200+80}px;animation-duration:${Math.random()*3+2}s;animation-delay:${Math.random()*4}s;`;
-    world.appendChild(line);
-  }
-  spawnCardParticles(world, 10); spawnFireflies(world, 16);
-}
-function startWorldAnimations(worldId) {
-  if (_particleIv) clearInterval(_particleIv);
-  if (_fireflyIv)  clearInterval(_fireflyIv);
-  _particleIv = setInterval(() => { const w = document.getElementById(worldId); if(w) spawnCardParticles(w,2); }, 3000);
-  _fireflyIv  = setInterval(() => { const w = document.getElementById(worldId); if(w) spawnFireflies(w,3); }, 2000);
-}
-function stopWorldAnimations() { clearInterval(_particleIv); clearInterval(_fireflyIv); }
-
-const PARTICLE_CARDS  = ['2','5','7','9','+2','+4','★','⊘','↺'];
-const PARTICLE_COLORS = ['linear-gradient(150deg,#ff6060,#c8192c)','linear-gradient(150deg,#5ab0ff,#0057b7)','linear-gradient(150deg,#44dc80,#00a550)','linear-gradient(150deg,#ffe84d,#ffda00)','conic-gradient(#c8192c 0 90deg,#0057b7 90deg 180deg,#00a550 180deg 270deg,#ffda00 270deg)'];
-function spawnCardParticles(world, count) {
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div'); el.className = 'card-particle';
-    const dur = (Math.random()*10+8).toFixed(1), size = (Math.random()*16+18).toFixed(0);
-    el.style.cssText = `left:${Math.random()*100}%;bottom:${Math.random()*30-5}%;width:${size}px;height:${size*1.5}px;background:${PARTICLE_COLORS[Math.floor(Math.random()*PARTICLE_COLORS.length)]};border-radius:3px;border:1.5px solid rgba(255,255,255,.18);animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;`;
-    el.textContent = PARTICLE_CARDS[Math.floor(Math.random()*PARTICLE_CARDS.length)];
-    world.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, (parseFloat(dur)+5)*1000);
-  }
-}
-function spawnFireflies(world, count) {
-  const FF = ['rgba(100,255,150,','rgba(255,200,80,','rgba(100,200,255,','rgba(255,100,200,'];
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div'); el.className = 'firefly';
-    const dur = (Math.random()*5+4).toFixed(1), col = FF[Math.floor(Math.random()*FF.length)];
-    const fx=(Math.random()-.5)*100, fy=-(Math.random()*80+20), fx2=(Math.random()-.5)*120, fy2=-(Math.random()*150+60);
-    el.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*60+20}%;background:${col}.9);box-shadow:0 0 6px 2px ${col}.6);--fx:${fx}px;--fy:${fy}px;--fx2:${fx2}px;--fy2:${fy2}px;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;`;
-    world.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, (parseFloat(dur)+3)*1000);
-  }
-}
+/* ════ FLASH PLAY (colour overlay on card played) ══════════ */
 function flashPlay(color, arenaId) {
   if (!cfg.anim) return;
   const cmap = { red:'rgba(255,23,68,.1)', blue:'rgba(41,121,255,.1)', green:'rgba(0,200,83,.1)', yellow:'rgba(255,214,0,.1)', wild:'rgba(255,255,255,.06)' };
@@ -162,9 +114,7 @@ function flashPlay(color, arenaId) {
   setTimeout(() => { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 600);
 }
 
-/* ════════════════════════════════════════════════════════════
-   CARD RENDERING (shared helpers)
-   ════════════════════════════════════════════════════════════ */
+/* ════ CARD RENDERING ═══════════════════════════════════════ */
 function lbl(v) { const m={skip:'⊘',reverse:'↺',draw2:'+2',wild:'★',wild4:'+4'}; return m[v]!==undefined?m[v]:v; }
 
 function makeCard(card, interactive, idx, onClickFn) {
@@ -183,6 +133,7 @@ function makeBack(index) {
   const r = ((index*7+3)%10-5).toFixed(1);
   el.style.setProperty('--r', r+'deg'); el.style.transform = `rotate(${r}deg)`;
   el.style.animationDelay = (index*0.034) + 's';
+  // Proper UNO back: oval div + UNO text
   el.innerHTML = '<div class="oval"></div><span class="btxt">UNO</span>';
   return el;
 }
@@ -212,69 +163,14 @@ function updateGemEl(gemEl, nameEl, color) {
   if (nameEl) nameEl.textContent = color.toUpperCase();
 }
 
-/* ════════════════════════════════════════════════════════════
-   TURN DOT (shared)
-   ════════════════════════════════════════════════════════════ */
-let turnDotEl = null, _dotAnimFrame = null, _currentAngle = 270;
-function initTurnDot(arenaId) {
-  const arena = document.getElementById(arenaId); if (!arena) return;
-  const old = document.getElementById('turn-dot'); if(old && old.parentNode) old.parentNode.removeChild(old);
-  const dot = document.createElement('div'); dot.id = 'turn-dot'; dot.setAttribute('data-label','...');
-  arena.appendChild(dot); turnDotEl = dot;
-  _currentAngle = 270;
-}
-function getTurnAngle(ti, numPlayers) {
-  const a = { 0:270 };
-  if (numPlayers === 2) a[1] = 90;
-  else if (numPlayers === 3) { a[1]=45; a[2]=135; }
-  else if (numPlayers === 4) { a[1]=90; a[2]=180; a[3]=0; }
-  return a[ti] !== undefined ? a[ti] : 270;
-}
-function placeTurnDotAt(angleDeg) {
-  if (!turnDotEl) return;
-  const arena = document.getElementById(turnDotEl.parentElement?.id) || turnDotEl.parentElement;
-  if (!arena) return;
-  const W = arena.offsetWidth || 400, H = arena.offsetHeight || 320;
-  const rx = W*0.48, ry = H*0.47;
-  const rad = (angleDeg-90) * Math.PI/180;
-  turnDotEl.style.left = (W/2 + rx*Math.cos(rad)) + 'px';
-  turnDotEl.style.top  = (H/2 + ry*Math.sin(rad)) + 'px';
-}
-function animateTurnDot(target, direction) {
-  if (!turnDotEl) return;
-  let diff = target - _currentAngle;
-  if (direction === 1) { if (diff < 0) diff += 360; }
-  else                 { if (diff > 0) diff -= 360; }
-  if (Math.abs(diff) < 2) { _currentAngle = target; placeTurnDotAt(target); return; }
-  const start = _currentAngle, dur = Math.min(700, Math.max(400, Math.abs(diff)*2.2));
-  let startTime = null;
-  if (_dotAnimFrame) cancelAnimationFrame(_dotAnimFrame);
-  function step(ts) {
-    if (!startTime) startTime = ts;
-    const t = Math.min(1,(ts-startTime)/dur);
-    const e = t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;
-    placeTurnDotAt(((( start+diff*e)%360)+360)%360);
-    if (t < 1) { _dotAnimFrame = requestAnimationFrame(step); }
-    else { _currentAngle = ((target%360)+360)%360; _dotAnimFrame = null; }
-  }
-  _dotAnimFrame = requestAnimationFrame(step);
-}
-function setTurnDotStyle(isMyTurn, label, direction) {
-  if (!turnDotEl) return;
-  turnDotEl.setAttribute('data-label', label);
-  turnDotEl.textContent = direction === 1 ? '▶' : '◀';
-  if (isMyTurn) {
-    turnDotEl.style.background = 'radial-gradient(circle at 38% 32%,#a8ffbb,#00c853)';
-    turnDotEl.style.boxShadow = '0 0 0 3px rgba(0,200,80,.3),0 0 16px rgba(0,200,80,.9),0 0 40px rgba(0,200,80,.5),0 3px 8px rgba(0,0,0,.5)';
-  } else {
-    turnDotEl.style.background = 'radial-gradient(circle at 38% 32%,#ff9090,#ff1744)';
-    turnDotEl.style.boxShadow = '0 0 0 3px rgba(255,23,68,.3),0 0 16px rgba(255,23,68,.9),0 0 40px rgba(255,23,68,.5),0 3px 8px rgba(0,0,0,.5)';
-  }
-}
+/* ════ TURN DOT — REMOVED ═══════════════════════════════════ */
+function initTurnDot()     {}
+function placeTurnDotAt()  {}
+function animateTurnDot()  {}
+function setTurnDotStyle() {}
+function getTurnAngle()    { return 270; }
 
-/* ════════════════════════════════════════════════════════════
-   TOAST
-   ════════════════════════════════════════════════════════════ */
+/* ════ TOAST ════════════════════════════════════════════════ */
 let toastTimer = null;
 function showToast(msg, dur) {
   dur = dur || 1700;
@@ -284,11 +180,8 @@ function showToast(msg, dur) {
   toastTimer = setTimeout(() => el.classList.remove('on'), dur);
 }
 
-/* ════════════════════════════════════════════════════════════
-   WIN SCREEN
-   ════════════════════════════════════════════════════════════ */
+/* ════ WIN SCREEN ═══════════════════════════════════════════ */
 function showWinScreen(opts) {
-  // opts: { isWinner, title, sub, emoji, scores:[] }
   const el = document.getElementById('win-emoji'); if(el) el.textContent = opts.emoji || '🎉';
   const wt = document.getElementById('win-title'); if(wt) { wt.textContent = opts.title; wt.style.color = opts.isWinner ? '#44dc80':'#ff7070'; }
   const ws = document.getElementById('win-sub'); if(ws) ws.textContent = opts.sub || '';
@@ -312,9 +205,7 @@ function spawnConfetti() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   ██████████████████████████████████████████████████████████
    VS CPU GAME
-   ██████████████████████████████████████████████████████████
    ════════════════════════════════════════════════════════════ */
 const COLORS   = ['red','blue','green','yellow'];
 const VALUES   = ['0','1','2','3','4','5','6','7','8','9','skip','reverse','draw2'];
@@ -322,13 +213,11 @@ const WILDS    = ['wild','wild4'];
 const BOT_ICONS = ['🤖','👾','🦊'];
 const BOT_NAMES = ['Robo','Pixel','Foxy'];
 
-// CPU game state
 let cpu_deck=[], cpu_playerHand=[], cpu_bots=[], cpu_discardPile=[];
 let cpu_currentColor='', cpu_currentValue='', cpu_turnIndex=0, cpu_numPlayers=0, cpu_direction=1;
 let cpu_pendingWild=false, cpu_drawnCard=null, cpu_timers=[], cpu_scorePlayer=0, cpu_scoreCpu=0;
 let cpu_cpuCount=1, cpu_difficulty='medium';
 
-// ── Mode select ───────────────────────────────────────────────
 function selectCpuCount(btn, count) {
   SFX.click(); document.querySelectorAll('.mpb').forEach(b => b.classList.remove('active'));
   btn.classList.add('active'); cpu_cpuCount = count;
@@ -341,11 +230,11 @@ function startVsCpu() {
   SFX.click(); cpu_scorePlayer = 0; cpu_scoreCpu = 0;
   const dp = document.getElementById('diff-pill'); if(dp) dp.textContent = cpu_difficulty.toUpperCase();
   showScreen('screen-game');
-  buildGameWorld('game-world'); startWorldAnimations('game-world');
+  buildGameWorld('game-world');
   setTimeout(cpu_initGame, 200);
 }
 function quitCpuGame() {
-  cpu_clearTimers(); stopWorldAnimations();
+  cpu_clearTimers();
   document.getElementById('quit-modal').classList.remove('open');
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('color-modal').classList.remove('open');
@@ -358,7 +247,6 @@ function onPlayAgain() {
   else cpu_initGame();
 }
 
-// ── Deck ──────────────────────────────────────────────────────
 function cpu_buildDeck() {
   const d = [];
   COLORS.forEach(c => VALUES.forEach(v => { d.push({color:c,value:v}); if(v!=='0') d.push({color:c,value:v}); }));
@@ -369,7 +257,6 @@ function cpu_shuffle(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.
 function cpu_deal() { if(!cpu_deck.length) cpu_reshuffle(); return cpu_deck.pop(); }
 function cpu_reshuffle() { const top=cpu_discardPile.pop(); cpu_deck=cpu_shuffle(cpu_discardPile.slice()); cpu_discardPile=[top]; showToast('Deck reshuffled 🔀'); }
 
-// ── Init ──────────────────────────────────────────────────────
 function cpu_initGame() {
   cpu_clearTimers();
   cpu_deck = cpu_shuffle(cpu_buildDeck());
@@ -384,13 +271,9 @@ function cpu_initGame() {
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('confetti-wrap').innerHTML='';
   cpu_thinkOff(); cpu_renderAll(); cpu_updateHUD();
-  initTurnDot('circular-arena');
-  placeTurnDotAt(270);
-  setTurnDotStyle(true,'YOU',1);
 }
 function cpu_clearTimers() { cpu_timers.forEach(t => clearTimeout(t)); cpu_timers=[]; }
 
-// ── Layout ────────────────────────────────────────────────────
 function cpu_buildCircularLayout() {
   const wrap = document.getElementById('opponents-wrap'); if(!wrap) return; wrap.innerHTML='';
   cpu_bots.forEach((bot,i) => {
@@ -417,7 +300,6 @@ function cpu_getHandClass(idx,total){
   return '';
 }
 
-// ── Render ────────────────────────────────────────────────────
 function cpu_renderAll() { cpu_renderHand(); cpu_bots.forEach((_,i) => cpu_renderBotHand(i)); cpu_renderDiscard(); }
 function cpu_renderHand() {
   const c = document.getElementById('player-hand'); if(!c) return; c.innerHTML='';
@@ -457,18 +339,10 @@ function cpu_updateHUD() {
   else { if(ah) ah.textContent='Waiting…'; if(pb) pb.style.display='none'; }
   const pzone=document.getElementById('player-zone'); if(pzone){ pzone.classList.toggle('my-turn',myTurn); pzone.classList.toggle('not-my-turn',!myTurn); }
   cpu_bots.forEach((bot,i)=>{ const slot=document.getElementById('cpu-slot-'+i); if(slot) slot.classList.toggle('active-bot',cpu_turnIndex===i+1); });
-  // Avatar glows
   const yb=document.getElementById('you-bubble'); if(yb) myTurn?yb.classList.add('active-turn'):yb.classList.remove('active-turn');
-  cpu_bots.forEach((bot,i)=>{ if(bot.el?.bubble) cpu_turnIndex===i+1?bot.el.bubble.classList.add('active-turn'):bot.el.bubble.classList.remove('active-turn'); });
-  // Turn dot
-  const dotLabel = myTurn?'YOU':(cpu_bots[cpu_turnIndex-1]?.name||'CPU');
-  setTurnDotStyle(myTurn, dotLabel, cpu_direction);
-  animateTurnDot(getTurnAngle(cpu_turnIndex, cpu_numPlayers), cpu_direction);
 }
 function cpu_thinkOn()  { const e=document.getElementById('think-dots'); if(e) e.classList.add('on'); }
 function cpu_thinkOff() { const e=document.getElementById('think-dots'); if(e) e.classList.remove('on'); }
-
-// ── Game logic ────────────────────────────────────────────────
 function cpu_canPlay(card) { if(!card) return false; if(card.color==='wild') return true; return card.color===cpu_currentColor||card.value===cpu_currentValue; }
 function cpu_nextTurn() { cpu_turnIndex=((cpu_turnIndex+cpu_direction)+cpu_numPlayers)%cpu_numPlayers; }
 function cpu_skipNext() { cpu_turnIndex=((cpu_turnIndex+cpu_direction*2)+cpu_numPlayers)%cpu_numPlayers; }
@@ -476,8 +350,6 @@ function cpu_drawPenalty(seatIdx, n, msg) {
   if(seatIdx===0){ for(let i=0;i<n;i++) cpu_playerHand.push(cpu_deal()); showToast(msg); cpu_renderHand(); cpu_updateHUD(); }
   else { const bot=cpu_bots[seatIdx-1]; if(!bot) return; for(let j=0;j<n;j++) bot.hand.push(cpu_deal()); showToast(msg); cpu_renderBotHand(seatIdx-1); cpu_updateHUD(); }
 }
-
-// Player actions
 function onDraw() {
   if(cpu_turnIndex!==0||cpu_drawnCard) return;
   SFX.draw(); vibe(15); const card=cpu_deal(); cpu_playerHand.push(card); cpu_drawnCard=card;
@@ -493,7 +365,6 @@ function callUno() {
   if(cpu_playerHand.length!==2||cpu_turnIndex!==0) return;
   SFX.uno(); vibe([50,30,50]); document.getElementById('uno-btn').disabled=true; showToast('UNO! 🔥',2200);
 }
-
 function cpu_onPlayCard(idx, el) {
   if(cpu_turnIndex!==0) return;
   const card=cpu_playerHand[idx]; if(!cpu_canPlay(card)) return;
@@ -508,7 +379,6 @@ function cpu_onPlayCard(idx, el) {
     cpu_currentColor=card.color; cpu_applyEffect(card.value,'player');
   },270);
 }
-
 function chooseColor(color) {
   SFX.click(); document.getElementById('color-modal').classList.remove('open');
   if (_mpActive) { mpChooseColor(color); return; }
@@ -523,7 +393,6 @@ function chooseColor(color) {
     cpu_skipNext(); cpu_thinkOff(); cpu_updateHUD(); cpu_renderHand();
   } else { cpu_nextTurn(); if(cpu_turnIndex===0){cpu_thinkOff();cpu_renderHand();cpu_updateHUD();}else{cpu_thinkOn();cpu_updateHUD();cpu_scheduleBots();} }
 }
-
 function cpu_applyEffect(value, who) {
   const isTwoPlayer=(cpu_numPlayers===2);
   if(value==='skip'){
@@ -543,8 +412,6 @@ function cpu_applyEffect(value, who) {
     cpu_nextTurn(); if(cpu_turnIndex===0){cpu_thinkOff();cpu_renderHand();cpu_updateHUD();}else{cpu_thinkOn();cpu_updateHUD();cpu_scheduleBots();}
   }
 }
-
-// Bot AI
 function cpu_scheduleBots() {
   if(cpu_turnIndex===0) return; cpu_clearTimers();
   const delay=cpu_difficulty==='hard'?1600+Math.random()*600:cpu_difficulty==='easy'?3000+Math.random()*1200:2200+Math.random()*800;
@@ -588,7 +455,6 @@ function cpu_runBotPlay(card) {
   }
   cpu_currentColor=card.color; cpu_renderDiscard(); cpu_applyEffect(card.value,'bot');
 }
-
 function cpu_endRound(winnerSeat) {
   cpu_clearTimers();
   const isPlayer=(winnerSeat===0);
@@ -602,9 +468,7 @@ function cpu_endRound(winnerSeat) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   ██████████████████████████████████████████████████████████
    MULTIPLAYER GAME
-   ██████████████████████████████████████████████████████████
    ════════════════════════════════════════════════════════════ */
 let socket = null;
 let _mpActive = false;
@@ -621,35 +485,31 @@ let mp_turnSeat = -1;
 let mp_deckCount = 0;
 let mp_drawnThisTurn = false;
 let mp_myName = 'Player';
-let mp_scoreMap = {}; // seatIndex -> score
+let mp_scoreMap = {};
 
-function showLobby() {
-  SFX.click(); showScreen('screen-lobby');
-  mp_connectSocket();
-}
+function showLobby() { SFX.click(); showScreen('screen-lobby'); mp_connectSocket(); }
 function mp_connectSocket() {
   if (socket && socket.connected) { updateLobbyStatus('Connected! Create or join a room.', true); return; }
   if (typeof io === 'undefined') { updateLobbyStatus('Server not reachable — run: npm start', false); return; }
   updateLobbyStatus('Connecting…', false);
   try {
     socket = io({ transports: ['websocket','polling'] });
-    socket.on('connect', ()         => { updateLobbyStatus('Connected! Create or join a room.', true); mp_myName = document.getElementById('player-name-input')?.value || 'Player'; });
-    socket.on('disconnect', ()      => { updateLobbyStatus('Disconnected', false); });
-    socket.on('connect_error', ()   => { updateLobbyStatus('Cannot reach server — run: npm start', false); });
-    socket.on('room:joined',    mp_onRoomJoined);
-    socket.on('room:players',   mp_onRoomPlayers);
-    socket.on('room:error',     d  => showToast('Error: ' + d.msg, 3000));
+    socket.on('connect',       ()  => { updateLobbyStatus('Connected! Create or join a room.', true); mp_myName = document.getElementById('player-name-input')?.value || 'Player'; });
+    socket.on('disconnect',    ()  => { updateLobbyStatus('Disconnected', false); });
+    socket.on('connect_error', ()  => { updateLobbyStatus('Cannot reach server — run: npm start', false); });
+    socket.on('room:joined',      mp_onRoomJoined);
+    socket.on('room:players',     mp_onRoomPlayers);
+    socket.on('room:error',    d  => showToast('Error: ' + d.msg, 3000));
     socket.on('room:player_left', d => showToast(d.name + ' left the game', 2500));
-    socket.on('game:started',   mp_onGameStarted);
-    socket.on('game:state',     mp_onGameState);
+    socket.on('game:started',     mp_onGameStarted);
+    socket.on('game:state',       mp_onGameState);
     socket.on('game:card_played', mp_onCardPlayed);
-    socket.on('game:choose_color', () => { SFX.wild(); document.getElementById('color-modal').classList.add('open'); });
-    socket.on('game:drew_playable', d => { mp_drawnThisTurn=true; showToast('Drew a playable card — play it or pass!',2500); mp_renderHand(); mp_updateHUD(); });
-    socket.on('game:over',      mp_onGameOver);
-    socket.on('game:toast',     d  => showToast(d.msg, d.dur||2000));
+    socket.on('game:choose_color',() => { SFX.wild(); document.getElementById('color-modal').classList.add('open'); });
+    socket.on('game:drew_playable',d => { mp_drawnThisTurn=true; showToast('Drew a playable card — play it or pass!',2500); mp_renderHand(); mp_updateHUD(); });
+    socket.on('game:over',        mp_onGameOver);
+    socket.on('game:toast',    d  => showToast(d.msg, d.dur||2000));
   } catch(e) { updateLobbyStatus('Socket.IO error: ' + e.message, false); }
 }
-
 function createRoom() {
   if (!socket?.connected) { showToast('Not connected — is the server running?', 2500); return; }
   mp_myName = document.getElementById('player-name-input')?.value?.trim() || 'Player';
@@ -676,21 +536,15 @@ function mpQuitGame() {
   document.getElementById('color-modal').classList.remove('open');
   if (socket && mp_roomCode) socket.emit('room:leave', { room: mp_roomCode });
   _mpActive = false; mp_roomCode=''; mp_mySeat=-1; mp_isHost=false; mp_players=[];
-  stopWorldAnimations(); showHome();
+  showHome();
 }
-function mpRestart() {
-  // Return to lobby
-  document.getElementById('win-overlay').classList.remove('show');
-  showScreen('screen-lobby');
-}
-
+function mpRestart() { document.getElementById('win-overlay').classList.remove('show'); showScreen('screen-lobby'); }
 function updateLobbyStatus(msg, ok) {
   const el = document.getElementById('lobby-status-txt'); if(el) el.textContent = msg;
   const dot = document.getElementById('lstat-dot'); if(dot) dot.style.background = ok ? '#00c853' : '#ff1744';
 }
 function mp_renderLobbyPlayers() {
-  const wrap = document.getElementById('lobby-players'); if(!wrap) return;
-  wrap.innerHTML = '';
+  const wrap = document.getElementById('lobby-players'); if(!wrap) return; wrap.innerHTML = '';
   mp_players.forEach((p,i) => {
     if (!p) return;
     const isMe = i === mp_mySeat;
@@ -699,191 +553,139 @@ function mp_renderLobbyPlayers() {
     wrap.appendChild(row);
   });
 }
-
 function mp_onRoomJoined(data) {
-  mp_roomCode = data.room; mp_mySeat = data.seat; mp_isHost = data.isHost;
-  mp_players = data.players;
-  const cw = document.getElementById('lobby-code-wrap'); if(cw) cw.style.display='flex';
-  const lc = document.getElementById('lobby-code'); if(lc) lc.textContent = data.room;
+  mp_roomCode=data.room; mp_mySeat=data.seat; mp_isHost=data.isHost; mp_players=data.players;
+  const cw=document.getElementById('lobby-code-wrap'); if(cw) cw.style.display='flex';
+  const lc=document.getElementById('lobby-code'); if(lc) lc.textContent=data.room;
   mp_renderLobbyPlayers();
-  const sb = document.getElementById('lobby-start-btn'); if(sb) sb.disabled = !(data.isHost && data.players.filter(Boolean).length>=2);
+  const sb=document.getElementById('lobby-start-btn'); if(sb) sb.disabled=!(data.isHost&&data.players.filter(Boolean).length>=2);
   updateLobbyStatus(`Room ${data.room} — ${data.isHost?'You are the host':'Waiting for host to start'}`, true);
-  showToast(data.isHost ? '🏠 Room created! Share the code.' : `✅ Joined room ${data.room}`, 2500);
+  showToast(data.isHost?'🏠 Room created! Share the code.':`✅ Joined room ${data.room}`, 2500);
 }
 function mp_onRoomPlayers(data) {
-  mp_players = data.players; mp_renderLobbyPlayers();
-  const sb = document.getElementById('lobby-start-btn'); if(sb) sb.disabled = !(mp_isHost && data.players.filter(Boolean).length>=2);
+  mp_players=data.players; mp_renderLobbyPlayers();
+  const sb=document.getElementById('lobby-start-btn'); if(sb) sb.disabled=!(mp_isHost&&data.players.filter(Boolean).length>=2);
   updateLobbyStatus(`${data.players.filter(Boolean).length} player(s) in room`, true);
 }
 function mp_onGameStarted() {
-  _mpActive = true; mp_drawnThisTurn = false;
+  _mpActive=true; mp_drawnThisTurn=false;
   showScreen('screen-mp-game');
-  buildGameWorld('mp-game-world'); startWorldAnimations('mp-game-world');
-  // Init score map
+  buildGameWorld('mp-game-world');
   mp_players.filter(Boolean).forEach(p => { if(mp_scoreMap[p.seat]===undefined) mp_scoreMap[p.seat]=0; });
-  // Update room badge
-  const rb = document.getElementById('mp-room-badge'); if(rb) rb.textContent = `ROOM: ${mp_roomCode}`;
-  // Update player name
-  const yn = document.getElementById('mp-you-name'); if(yn) yn.textContent = mp_players[mp_mySeat]?.name || 'You';
-  // Player badge
-  const pb = document.getElementById('mp-player-badge'); if(pb) pb.textContent = `P${mp_mySeat+1}`;
-  // You bubble icon
-  const yb = document.getElementById('mp-you-bubble'); if(yb) yb.textContent = mp_players[mp_mySeat]?.icon || '😎';
+  const rb=document.getElementById('mp-room-badge'); if(rb) rb.textContent=`ROOM: ${mp_roomCode}`;
+  const yn=document.getElementById('mp-you-name'); if(yn) yn.textContent=mp_players[mp_mySeat]?.name||'You';
+  const pb=document.getElementById('mp-player-badge'); if(pb) pb.textContent=`P${mp_mySeat+1}`;
+  const yb=document.getElementById('mp-you-bubble'); if(yb) yb.textContent=mp_players[mp_mySeat]?.icon||'😎';
 }
 function mp_onGameState(state) {
-  mp_hand = state.hand || [];
-  mp_discardPile = [state.discardTop];
-  mp_currentColor = state.currentColor;
-  mp_currentValue = state.currentValue;
-  mp_direction = state.direction;
-  mp_turnSeat = state.turnSeat;
-  mp_deckCount = state.deckCount;
-  if (!state.drawnThisTurn) mp_drawnThisTurn = false;
-  // Build opponent slots if needed
-  mp_buildOpponentSlots(state.players);
-  mp_renderHand();
-  mp_renderDiscard();
-  mp_updateHUD(state.players);
+  mp_hand=state.hand||[]; mp_discardPile=[state.discardTop]; mp_currentColor=state.currentColor;
+  mp_currentValue=state.currentValue; mp_direction=state.direction; mp_turnSeat=state.turnSeat;
+  mp_deckCount=state.deckCount; if(!state.drawnThisTurn) mp_drawnThisTurn=false;
+  mp_buildOpponentSlots(state.players); mp_renderHand(); mp_renderDiscard(); mp_updateHUD(state.players);
 }
 function mp_onCardPlayed(data) {
-  flashPlay(data.card?.color, 'mp-game-world');
-  SFX.play();
-  if (data.seat !== mp_mySeat) showToast(`${data.playerName} played ${lbl(data.card?.value)}!`, 1500);
+  flashPlay(data.card?.color,'mp-game-world'); SFX.play();
+  if(data.seat!==mp_mySeat) showToast(`${data.playerName} played ${lbl(data.card?.value)}!`, 1500);
 }
 function mp_onGameOver(data) {
-  _mpActive = false;
-  const isMe = data.winnerSeat === mp_mySeat;
-  if (data.abandoned) { showWinScreen({ isWinner:false, emoji:'😢', title:'GAME OVER', sub:'A player disconnected', scores:[] }); return; }
-  if (isMe) mp_scoreMap[mp_mySeat] = (mp_scoreMap[mp_mySeat]||0)+1;
+  _mpActive=false;
+  const isMe=data.winnerSeat===mp_mySeat;
+  if(data.abandoned){showWinScreen({isWinner:false,emoji:'😢',title:'GAME OVER',sub:'A player disconnected',scores:[]});return;}
+  if(isMe) mp_scoreMap[mp_mySeat]=(mp_scoreMap[mp_mySeat]||0)+1;
   showWinScreen({
-    isWinner: isMe, emoji: isMe?'🎉':'😔',
-    title: isMe?'YOU WIN!': (data.winnerName||'Someone')+' WINS!',
-    sub: isMe?'You ran out of cards first!':'Better luck next time!',
-    scores: mp_players.filter(Boolean).map(p => ({name:p.name+(p.seat===mp_mySeat?' (You)':''), value:mp_scoreMap[p.seat]||0}))
+    isWinner:isMe,emoji:isMe?'🎉':'😔',
+    title:isMe?'YOU WIN!':(data.winnerName||'Someone')+' WINS!',
+    sub:isMe?'You ran out of cards first!':'Better luck next time!',
+    scores:mp_players.filter(Boolean).map(p=>({name:p.name+(p.seat===mp_mySeat?' (You)':''),value:mp_scoreMap[p.seat]||0}))
   });
 }
-
-// MP Layout
-let _mpOpponentsBuilt = false;
+let _mpOpponentsBuilt=false;
 function mp_buildOpponentSlots(players) {
-  const wrap = document.getElementById('mp-opponents-wrap'); if(!wrap) return;
-  const others = players.filter(p => p.seat !== mp_mySeat);
-  // Only rebuild if player count changed
-  if (wrap.children.length === others.length) return;
+  const wrap=document.getElementById('mp-opponents-wrap'); if(!wrap) return;
+  const others=players.filter(p=>p.seat!==mp_mySeat);
+  if(wrap.children.length===others.length) return;
   wrap.innerHTML=''; _mpOpponentsBuilt=false;
-  const positions = mp_getPositions(others.length);
-  others.forEach((p, i) => {
-    const slot = document.createElement('div');
-    slot.className = 'player-slot ' + positions[i]; slot.id = `mp-opp-slot-${p.seat}`;
-    slot.innerHTML = `<div class="slot-avatar av-mp${i}" id="mp-opp-bubble-${p.seat}">${p.icon||'🎮'}</div><div class="slot-name">${p.name}</div><div class="slot-cnt" id="mp-opp-cnt-${p.seat}">${p.cardCount}</div><div class="slot-hand" id="mp-opp-hand-${p.seat}"></div>`;
+  const positions=mp_getPositions(others.length);
+  others.forEach((p,i)=>{
+    const slot=document.createElement('div');
+    slot.className='player-slot '+positions[i]; slot.id=`mp-opp-slot-${p.seat}`;
+    slot.innerHTML=`<div class="slot-avatar av-mp${i}" id="mp-opp-bubble-${p.seat}">${p.icon||'🎮'}</div><div class="slot-name">${p.name}</div><div class="slot-cnt" id="mp-opp-cnt-${p.seat}">${p.cardCount}</div><div class="slot-hand" id="mp-opp-hand-${p.seat}"></div>`;
     wrap.appendChild(slot);
   });
-  initTurnDot('mp-circular-arena');
-  placeTurnDotAt(270);
-  _mpOpponentsBuilt = true;
+  _mpOpponentsBuilt=true;
 }
-function mp_getPositions(count) {
-  if (count===1) return ['bot-top-center'];
-  if (count===2) return ['bot-top-left','bot-top-right'];
-  if (count===3) return ['bot-top-center','bot-mid-left','bot-mid-right'];
+function mp_getPositions(count){
+  if(count===1) return ['bot-top-center'];
+  if(count===2) return ['bot-top-left','bot-top-right'];
+  if(count===3) return ['bot-top-center','bot-mid-left','bot-mid-right'];
   return ['bot-top-center','bot-mid-left','bot-top-right','bot-mid-right'];
 }
-
 function mp_renderHand() {
-  const c = document.getElementById('mp-player-hand'); if(!c) return; c.innerHTML='';
-  const isMyTurn = mp_turnSeat === mp_mySeat;
-  mp_hand.forEach((card,i) => {
-    const playable = isMyTurn && mp_canPlay(card);
-    const isDrawnCard = mp_drawnThisTurn && i === mp_hand.length-1;
-    const hasDrawn = mp_drawnThisTurn;
-    const allowPlay = playable && (!hasDrawn || isDrawnCard);
-    const el = makeCard(card, true, i, allowPlay ? () => mpPlayCard(card, el) : null);
+  const c=document.getElementById('mp-player-hand'); if(!c) return; c.innerHTML='';
+  const isMyTurn=mp_turnSeat===mp_mySeat;
+  mp_hand.forEach((card,i)=>{
+    const playable=isMyTurn&&mp_canPlay(card);
+    const isDrawnCard=mp_drawnThisTurn&&i===mp_hand.length-1;
+    const hasDrawn=mp_drawnThisTurn;
+    const allowPlay=playable&&(!hasDrawn||isDrawnCard);
+    const el=makeCard(card,true,i,allowPlay?()=>mpPlayCard(card,el):null);
     c.appendChild(el);
   });
 }
-function mp_renderDiscard() { renderDiscardPile(document.getElementById('mp-discard-pile'), mp_discardPile, mp_currentColor); }
+function mp_renderDiscard() { renderDiscardPile(document.getElementById('mp-discard-pile'),mp_discardPile,mp_currentColor); }
 function mp_canPlay(card) { if(!card) return false; if(card.color==='wild') return true; return card.color===mp_currentColor||card.value===mp_currentValue; }
-
 function mp_updateHUD(players) {
-  const isMyTurn = mp_turnSeat === mp_mySeat;
-  const tp = document.getElementById('mp-turn-pill');
+  const isMyTurn=mp_turnSeat===mp_mySeat;
+  const tp=document.getElementById('mp-turn-pill');
   if(tp){
-    if(isMyTurn){ tp.textContent = mp_drawnThisTurn?'PLAY OR PASS':'YOUR TURN'; tp.className='turn-you'; }
-    else { const p=players?.find(p=>p.seat===mp_turnSeat); tp.textContent=(p?.name||'Opponent')+"'s Turn"; tp.className='turn-cpu'; }
+    if(isMyTurn){tp.textContent=mp_drawnThisTurn?'PLAY OR PASS':'YOUR TURN';tp.className='turn-you';}
+    else{const p=players?.find(p=>p.seat===mp_turnSeat);tp.textContent=(p?.name||'Opponent')+"'s Turn";tp.className='turn-cpu';}
   }
   updateGemEl(document.getElementById('mp-color-gem'),document.getElementById('mp-color-name'),mp_currentColor);
   const dir=document.getElementById('mp-dir-wheel'); if(dir) dir.textContent=mp_direction===1?'↺':'↻';
   const dc=document.getElementById('mp-deck-count'); if(dc) dc.textContent=mp_deckCount;
-  const pc=document.getElementById('mp-player-count'); if(pc){ pc.textContent=mp_hand.length; mp_hand.length===1?pc.classList.add('uno-pop'):pc.classList.remove('uno-pop'); }
-  // Opponent counts
-  if(players) players.filter(p=>p.seat!==mp_mySeat).forEach(p => {
-    const cnt=document.getElementById(`mp-opp-cnt-${p.seat}`); if(cnt){ cnt.textContent=p.cardCount; p.cardCount===1?cnt.classList.add('uno-pop'):cnt.classList.remove('uno-pop'); }
-    const hand=document.getElementById(`mp-opp-hand-${p.seat}`); if(hand){ hand.innerHTML=''; for(let j=0;j<Math.min(p.cardCount,12);j++) hand.appendChild(makeBack(j)); }
-    const slot=document.getElementById(`mp-opp-slot-${p.seat}`); if(slot) slot.classList.toggle('active-bot', mp_turnSeat===p.seat);
+  const pc=document.getElementById('mp-player-count'); if(pc){pc.textContent=mp_hand.length;mp_hand.length===1?pc.classList.add('uno-pop'):pc.classList.remove('uno-pop');}
+  if(players) players.filter(p=>p.seat!==mp_mySeat).forEach(p=>{
+    const cnt=document.getElementById(`mp-opp-cnt-${p.seat}`); if(cnt){cnt.textContent=p.cardCount;p.cardCount===1?cnt.classList.add('uno-pop'):cnt.classList.remove('uno-pop');}
+    const hand=document.getElementById(`mp-opp-hand-${p.seat}`); if(hand){hand.innerHTML='';for(let j=0;j<Math.min(p.cardCount,12);j++) hand.appendChild(makeBack(j));}
+    const slot=document.getElementById(`mp-opp-slot-${p.seat}`); if(slot) slot.classList.toggle('active-bot',mp_turnSeat===p.seat);
     const bub=document.getElementById(`mp-opp-bubble-${p.seat}`); if(bub) mp_turnSeat===p.seat?bub.classList.add('active-turn'):bub.classList.remove('active-turn');
   });
   const ub=document.getElementById('mp-uno-btn'); if(ub) ub.disabled=!(mp_hand.length===2&&isMyTurn);
   const ah=document.getElementById('mp-action-hint'),pb=document.getElementById('mp-pass-btn');
   if(isMyTurn){
-    if(mp_drawnThisTurn){ const canP=mp_hand.length>0&&mp_canPlay(mp_hand[mp_hand.length-1]); if(ah) ah.textContent=canP?'Play drawn card or pass':'No match — pass'; if(pb){pb.style.display='inline-flex';pb.disabled=false;} }
-    else{ if(ah) ah.textContent='Pick a card or draw'; if(pb) pb.style.display='none'; }
-  }else{ if(ah) ah.textContent='Waiting…'; if(pb) pb.style.display='none'; }
-  const pzone=document.getElementById('mp-player-zone'); if(pzone){ pzone.classList.toggle('my-turn',isMyTurn); pzone.classList.toggle('not-my-turn',!isMyTurn); }
+    if(mp_drawnThisTurn){const canP=mp_hand.length>0&&mp_canPlay(mp_hand[mp_hand.length-1]);if(ah) ah.textContent=canP?'Play drawn card or pass':'No match — pass';if(pb){pb.style.display='inline-flex';pb.disabled=false;}}
+    else{if(ah) ah.textContent='Pick a card or draw';if(pb) pb.style.display='none';}
+  }else{if(ah) ah.textContent='Waiting…';if(pb) pb.style.display='none';}
+  const pzone=document.getElementById('mp-player-zone'); if(pzone){pzone.classList.toggle('my-turn',isMyTurn);pzone.classList.toggle('not-my-turn',!isMyTurn);}
   const yb=document.getElementById('mp-you-bubble'); if(yb) isMyTurn?yb.classList.add('active-turn'):yb.classList.remove('active-turn');
-  // Thinking dots
   const td=document.getElementById('mp-think-dots'); if(td) isMyTurn?td.classList.remove('on'):td.classList.add('on');
-  // Turn dot
-  if(players){
-    const totalPlayers = players.length;
-    const myGlobalIdx = mp_mySeat;
-    const turnGlobalIdx = mp_turnSeat;
-    // Map seats to turn dot index (0=you, 1..n=others in order)
-    const turnDotIdx = turnGlobalIdx === myGlobalIdx ? 0 : (() => {
-      const others = players.filter(p=>p.seat!==myGlobalIdx).map(p=>p.seat).sort((a,b)=>a-b);
-      return others.indexOf(turnGlobalIdx)+1;
-    })();
-    const dotLabel = isMyTurn?'YOU':(players.find(p=>p.seat===mp_turnSeat)?.name||'???');
-    setTurnDotStyle(isMyTurn, dotLabel, mp_direction);
-    animateTurnDot(getTurnAngle(turnDotIdx, totalPlayers), mp_direction);
-  }
 }
-
-// MP player actions
 function mpPlayCard(card, el) {
-  if (!socket || mp_turnSeat !== mp_mySeat) return;
+  if(!socket||mp_turnSeat!==mp_mySeat) return;
   SFX.play(); vibe(20); el.classList.add('playing');
   if(card.color==='wild'){
-    setTimeout(()=>{ document.getElementById('color-modal').classList.add('open'); mp_hand.splice(mp_hand.findIndex(c=>c===card),1); socket.emit('game:play',{room:mp_roomCode,card}); },200);
+    setTimeout(()=>{document.getElementById('color-modal').classList.add('open');mp_hand.splice(mp_hand.findIndex(c=>c===card),1);socket.emit('game:play',{room:mp_roomCode,card});},200);
   } else {
-    socket.emit('game:play', { room: mp_roomCode, card });
-    mp_drawnThisTurn = false;
+    socket.emit('game:play',{room:mp_roomCode,card}); mp_drawnThisTurn=false;
   }
 }
 function mpOnDraw() {
   if(!socket||mp_turnSeat!==mp_mySeat||mp_drawnThisTurn) return;
-  SFX.draw(); vibe(15);
-  socket.emit('game:draw', { room: mp_roomCode });
+  SFX.draw(); vibe(15); socket.emit('game:draw',{room:mp_roomCode});
 }
 function mpPassTurn() {
   if(!socket||mp_turnSeat!==mp_mySeat||!mp_drawnThisTurn) return;
-  SFX.click(); mp_drawnThisTurn=false;
-  socket.emit('game:pass', { room: mp_roomCode });
+  SFX.click(); mp_drawnThisTurn=false; socket.emit('game:pass',{room:mp_roomCode});
 }
 function mpCallUno() {
   if(!socket||mp_hand.length!==2||mp_turnSeat!==mp_mySeat) return;
-  SFX.uno(); vibe([50,30,50]);
-  socket.emit('game:uno', { room: mp_roomCode });
-  document.getElementById('mp-uno-btn').disabled=true;
-  showToast('UNO! 🔥',2200);
+  SFX.uno(); vibe([50,30,50]); socket.emit('game:uno',{room:mp_roomCode});
+  document.getElementById('mp-uno-btn').disabled=true; showToast('UNO! 🔥',2200);
 }
-function mpChooseColor(color) {
-  if(!socket) return;
-  socket.emit('game:color', { room: mp_roomCode, color });
-}
+function mpChooseColor(color) { if(!socket) return; socket.emit('game:color',{room:mp_roomCode,color}); }
 
-/* ════════════════════════════════════════════════════════════
-   LOADING & BOOT
-   ════════════════════════════════════════════════════════════ */
+/* ════ LOADER & BOOT ════════════════════════════════════════ */
 function runLoader() {
   showScreen('screen-loading');
   const fill=document.getElementById('load-fill'), pct=document.getElementById('load-pct'); let p=0;
@@ -893,10 +695,8 @@ function runLoader() {
     if(p>=100) setTimeout(()=>{loadCfg();showHome();},400);
   },110);
 }
-
 window.addEventListener('DOMContentLoaded', () => {
   runLoader();
   document.getElementById('settings-modal')?.addEventListener('click', e => { if(e.target===e.currentTarget) closeSettings(); });
-  // Make mp-draw-pile clickable
   document.getElementById('mp-draw-pile')?.addEventListener('click', mpOnDraw);
 });
